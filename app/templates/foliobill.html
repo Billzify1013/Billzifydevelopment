@@ -1,0 +1,446 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+
+{% load static %}
+<html
+  lang="en"
+  class="light-style layout-menu-fixed"
+  dir="ltr"
+  data-theme="theme-default"
+  data-assets-path="{% static 'undercss/assets/'%}"
+  data-template="vertical-menu-template-free"
+>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
+    />
+
+    <title>Dashboard - Analytics | Sneat - Bootstrap 5 HTML Admin Template - Pro</title>
+
+    <meta name="description" content="" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{% static 'undercss/assets/img/favicon/favicon.ico'%}" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Icons. Uncomment required icon fonts -->
+    <link rel="stylesheet" href="{% static 'undercss/assets/vendor/fonts/boxicons.css'%}" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="{% static 'undercss/assets/vendor/css/core.css'%}" class="template-customizer-core-css'%}" />
+    <link rel="stylesheet" href="{% static 'undercss/assets/vendor/css/theme-default.css'%}" class="template-customizer-theme-css'%}" />
+    <link rel="stylesheet" href="{% static 'undercss/assets/css/demo.css'%}" />
+
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" href="{% static 'undercss/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css'%}" />
+
+    <link rel="stylesheet" href="{% static 'undercss/assets/vendor/libs/apex-charts/apex-charts.css'%}" />
+
+    {% comment %} <link rel="stylesheet" href="{% static 'undercss/assets/vendor/libs/spinkit/spinkit.css'%}" /> {% endcomment %}
+
+    <!-- Page donwload link to pdf -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+    <!-- Helpers -->
+    <script src="{% static 'undercss/assets/vendor/js/helpers.js'%}"></script>
+
+    <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
+    <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
+    <script src="{% static 'undercss/assets/js/config.js'%}"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <style type="text/css">
+        body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+.invoice-container {
+    width: 100%;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+}
+
+.header img,
+.footer img {
+    width: 100%;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.invoice-details {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+.left h1 {
+    color: #333;
+    margin-top: 0;
+}
+
+.client-details h2,
+.invoice-items h2,
+.totals p {
+    margin-top: 0;
+}
+
+.right p {
+    margin: 2px 0;
+}
+
+.invoice-items,
+.totals {
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 0px;
+    margin-bottom: 10px;
+}
+
+.item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1px;
+}
+
+.item p {
+    margin: 0;
+}
+
+.totals {
+    display: flex;
+    justify-content: space-between;
+}
+
+.footer img {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+    </style>
+</head>
+  </head>
+    
+
+<body>
+
+    
+{% if messages%}
+{% for msg in messages %}
+<div class="container mt-5">
+    <!-- Success Alert -->
+    {% if msg.tags == 'success' %}
+    <div id="success-alert" class="alert alert-success alert-dismissible" role="alert">
+        {{msg}}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {%else%}
+    <div id="success-alert" class="alert alert-danger alert-dismissible" role="alert">
+        {{msg}}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {%endif%}
+</div>
+{%endfor%}
+
+<script>
+    $(document).ready(function() {
+        // Fade out the alert after 5 seconds (5000 milliseconds)
+        setTimeout(function() {
+            $("#success-alert").fadeTo(500, 0).slideUp(500, function(){
+                $(this).remove(); 
+            });
+        }, 2000);
+    });
+</script>
+{%endif%}
+
+    
+    
+    <div class=" row">
+        <div class="col-2">
+        <input type=button value="Back" class="btn btn-outline-warning" onClick="javascript:history.go(-1);">
+        </div>
+        <div class="col-6">
+
+     <form  action="{% url 'cancelroom' %}" method="post">
+        {% csrf_token %}
+            {%for data in invoice_data%}
+            <input type="hidden" name="roomno" value="{{data.customer.roomno}}" />
+            <input type="hidden" name="invoice_id" value="{{data.id}}" />
+            <input type="hidden" name="guest_id" value="{{data.customer.id}}" />
+            {%endfor%} 
+    <button class="btn btn-danger float-end  me-3" type="submit">Cancel Booking & Delete Folio</button>
+     </form>
+    </div>
+    <div class="col-4">
+
+    <form action="{% url 'checkoutroom' %}" method="post">
+        {% csrf_token %}
+        {%for data in invoice_data%}
+        <input type="hidden" name="roomno" value="{{data.customer.roomno}}" />
+        <input type="hidden" name="invoice_id" value="{{data.id}}" />
+        {%endfor%}
+    <button class="btn btn-primary w-100  float-end" type="submit">Checkout Room & Save Invoice</button>
+  
+</div>
+    </div>
+        <div class="invoice-container mt-3" id="invoice" >
+            <div class="header" style="margin-top:-30px">
+                <div class="row">
+                    
+                    <div class="col-10">
+               
+            </div></div></div>
+            <div class="invoice-details">{%for data in invoice_data%}
+                
+                <div class="center m-4 mb-0">
+                    <h6>Guest Information</h6>
+                <p>Name: {{data.customer.guestname}}</p>
+                <p>Phone: {{data.customer.guestphome}}</p>
+                <p>Room NO: {{data.customer.roomno}}</p>
+                <p>CheckOut Date: {{data.customer.checkoutdate}} <span style="font-size:10px">Checkout time not update please check it</span></p>
+                {%if data.customer_gst_number%}
+                <p>gstin: {{data.customer_gst_number}}</p>
+                {%endif%}
+                </div>
+                
+                {% if loyltydata%}
+                <div class="col-8 form-check form-switch mt-3 mb-2 ms-3 border-danger" style="border:px solid red;border-radius:10px">
+                    {%for i in loyltydata%}
+                    <input class="form-check-input ms-1 float-end mt-1" style="height:25px;width:60px" type="checkbox" id="flexSwitchCheckChecked" name="loyltycheck" />
+                    <br>
+                    <br><span class="badge float-end bg-label-success mb-1 me-1 mt-1   ">On This Button To Save Loylty Points for This guest And Send Speacial SMS.</span>
+                 <br><br> <span class="mt-1 float-end">You Will Give {{i.loylty_rate_prsantage}}% Loylty Points On The Billing Amount. </span>
+                </div>
+                {%endfor%}
+                {%endif%}
+            </div>
+            <div class="row ms-2">
+            <div class="col mb-3 w-25">
+                <label for="nameBackdrop" class="form-label">Payment Mode</label>
+                <select class="form-control" id="selectValue" onchange="showinput()" name="paymentstatus" placeholder="Select Payment" required>
+                    <option  value="cash">Cash</option>
+                    <option  value="online">Online</option>
+                    <option  value="Partly">Partially</option>
+                    <option  value="unpaid">UnPaid</option>
+                </select>
+              </div>
+              <div class="col  w-25" id="inputcash"  style="display:none">
+                <label for="nameBackdrop" class="form-label"id="nameBackdrop" style="font-size:10px;display:none">Cash</label>
+                <input type="number" class="form-control" value="{{data.cash_amount}}" name="cashamount"  placeholder="Cash Amount"/>
+                
+            </div>
+              <div class="col  w-25">
+                <label for="nameBackdrop" class="form-label" id="nameBackdrops" style="font-size:10px;display:none">Online</label>
+                <input type="number" class="form-control" value="{{data.online_amount}}" name="onlineamount" id="inputonline" placeholder="Online Amount" style="display:none"/>
+              </div>
+              
+              
+
+            </div>
+            <div class="col mt-1 ms-4 mb-3 w-25" id="duedateinput" style="display:none">
+                <label>Due Date</label>
+                <input type="date" class="form-control"  name="duedate"  placeholder="Due Date" style="display:"/>
+              </div>
+            <div>
+                <input type="checkbox" class="form-check-input ms-4 mb-2" id="gstcheck"  />
+                If Your customer Have Gst Number Check It for Show Form.
+
+                <input type="text" name="gstnumber" id="gstinput" style="display:none;" class="form-control mb-2 ms-4 w-25 mt-2" placeholder="Customer Gstin number"/>
+            </div>
+              {%endfor%}
+              <script>
+                document.getElementById('gstcheck').addEventListener('change', function() {
+                    document.getElementById('gstinput').style.display="block";
+                })
+
+                function showinput() {
+                    var selectElement = document.getElementById('selectValue');
+                    var selectedValue = selectElement.value;
+                    document.getElementById('inputcash').style.display="none";
+                    document.getElementById('inputonline').style.display="none";
+                    if (selectedValue == "Partly"){
+                    document.getElementById('inputcash').style.display="block";
+                    document.getElementById('inputonline').style.display="block";
+                    document.getElementById('nameBackdrop').style.display="block";
+                    document.getElementById('nameBackdrops').style.display="block";
+                    document.getElementById('duedateinput').style.display="none";
+                    }
+                    else if (selectedValue == "unpaid"){
+                        document.getElementById('duedateinput').style.display="block";
+                    }
+                    else {
+                        document.getElementById('inputcash').style.display="none";
+                    document.getElementById('inputonline').style.display="none";
+                    document.getElementById('nameBackdrop').style.display="none";
+                    document.getElementById('nameBackdrops').style.display="none";
+                    document.getElementById('duedateinput').style.display="none";
+                    }
+
+                };
+              </script>
+            
+        </form>
+           
+            <div class="invoice-items" >
+                <div class="table-responsive text-nowrap" >
+                    <table class="table " >
+                      <thead class="table-light">
+                            <tr>
+                                <th>Room No</th>
+                                {%for data in invoice_data%}
+                                {%if data.taxtype == 'GST'%}
+                                <th>Gst</th>
+                                <th>Sgst</th>
+                                {%else%}
+                                <th>Igst</th>
+                                {%endif%}
+                                {%endfor%}
+                                <th>HSN/SAC</th>
+                                <th>Price</th>
+                                <th>Qty/Day</th>
+                                <th>Total
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {%for iteams in invoiceitemdata%}
+                            <tr >
+                                
+                                <td style="font-size:18px">
+                                    {%if iteams.paidstatus is True %}
+                                    <span class="badge bg-label-success me-1">Paid</span>
+                                    {%else%}
+                                    <input class="form-check-input"  type="checkbox" name="object"  value="{{iteams.total_amount}}"/>
+                                  
+                                    {%endif%}
+                                    {{iteams.description}}</td>
+                                {%for data in invoice_data%}
+                                {%if data.taxtype == 'GST'%}
+                                <td style="font-size:18px">{{iteams.sgst_rate}} %  </td>
+                                <td style="font-size:18px">{{iteams.sgst_rate}} %  </td>
+                                {%else%}
+                                <td style="font-size:18px">{{iteams.sgst_rate|add:iteams.sgst_rate}}% </td>
+                                {%endif%}
+                                {%endfor%}
+                                <td style="font-size:18px">{{iteams.hsncode}}</td>
+                                <td style="font-size:18px">{{iteams.price}}</td>
+                                <td style="font-size:18px">{{iteams.quantity_likedays}}</td>
+                                <td style="font-size:18px">{{iteams.total_amount}}</td>
+                            </tr>
+                            {%endfor%}
+                        </tbody>
+                    </table>
+                
+
+                <div class="card shadow-none mb-0 w-50  float-end" style="margin-top:0px">
+                    {%for data in invoice_data%}
+              
+                      
+                      <li class="list-group-item" style="font-size:13px">
+                        <span class="text w-50">Total</span> 
+                        <span class="text float-end">₹{{data.total_item_amount}}</span><br>
+                        <span class="text w-50">Discount</span> 
+                        <span class="text float-end">₹ {{data.discount_amount}}</span><br>
+                        <span class="text w-50">Subtotal</span> 
+                        <span class="text float-end">₹ {{data.subtotal_amount}}</span><br>
+
+                        {%for data in invoice_data%}
+                                {%if data.taxtype == 'GST'%}
+                                    <span class="text w-50">Gst Total</span> 
+                                    <span class="text float-end">₹ {{data.gst_amount}}</span><br>
+                                    <span class="text w-50">Sgst Total</span> 
+                                    <span class="text float-end">₹ {{data.sgst_amount}}</span>
+                                {%else%}
+                                <span class="text w-50">Igst Total</span> 
+                                    <span class="text float-end">₹ {{data.sgst_amount|add:data.sgst_amount}}</span>
+
+                                {%endif%}
+                        {%endfor%}
+                        
+                      </li> 
+                      
+                      
+                       
+                      <li class="list-group-item">
+                        <span class="text w-50"><b>Grand Total</b></span> 
+                        <span class="text float-end"><b>₹ {{data.grand_total_amount}}</b></span>
+                      </li> 
+                      {%endfor%}
+                    </ul>
+                    <span class="mt-2 mb-2 text " style="font-size:9px"><i class='bx bxs-info-circle'></i>Rooms have discount, so their tax calculation are done after applying the discount.</span>
+                
+                  </div>
+                  <div class=" mt-5 " style="width:45%">
+                    <h4 id="total" class="text m-3"></h4>
+                    <button id="submitBtn" class="btn btn-primary mt-5 w-50 m-3">Calculate</button><br>
+                    <span class="text text-secondary mt-3 " ><i class='bx bxs-info-circle'></i> Click Unpaid CheckBox And Calculated Reamaining Amount.</span>
+                </div>
+                </div>
+            </div>
+       
+            </div>
+           
+            {% if loyltydata%}
+            <div class="card mt-3" >
+               <h3 class="m-3 text-primary">Reward Program</h3>
+               {%for i in loyltydata%}
+                <h5 class="m-3">You will give {{i.loylty_rate_prsantage}}% loyalty points on the total billing amount. Are you sure you want to award loyalty points to this customer? Please On the button</h5>
+               {%endfor%}
+               
+
+            
+               <h6 class="m-2 ms-3"><i class='bx bxl-jquery text-primary me-2'></i>An SMS will automatically be sent to the Your guest.</h6>
+               <h6 class="m-2 ms-3"><i class='bx bxl-jquery text-primary me-2'></i> informing them about the Your loyalty program.,</h6>
+               <h6 class="m-2 ms-3"><i class='bx bxl-jquery text-primary me-2'></i> helping you build a strong and proud relationship with your customers.</h6>
+               <h6 class="m-2 ms-3"><i class='bx bxl-jquery text-primary me-2'></i> Enhance Customer Lifetime Value.</h6>
+               <h6 class="m-2 ms-3"><i class='bx bxl-jquery text-primary me-2'></i>Create Personalized Marketing Campaigns.</h6>
+               <h6 class="m-2 ms-3"><i class='bx bxl-jquery text-primary me-2'></i>Build a Loyal Customer Community.</h6>
+               <h6 class="m-2 ms-3"><i class='bx bxl-jquery text-primary me-2'></i>Boost Sales During Slow Periods.</h6>
+               <h6 class="m-2 ms-3"><i class='bx bxl-jquery text-primary me-2'></i>Provide Exclusive VIP Experiences.</h6>
+            </div>
+            {%endif%}
+            
+      
+           
+    
+        <script>
+            $(document).ready(function(){
+                $("#submitBtn").click(function(){
+                //room counting data start
+                var selectedData = [];
+                var total_amount = 0;
+                var taxamount = 0;
+                $("input[name='object']:checked").each(function(){
+                    var value = $(this).val();
+                    var amount = value.split(',')[0];
+                    total_amount +=  parseInt(amount)
+                    selectedData.push({amount: amount, });
+                })
+                console.log(total_amount)
+                $('#total').html("Total Amount :"+total_amount);
+            });
+            });
+        </script>
+
+   
+</body>
+
+
+    </html>
+
+{%endblock%}
