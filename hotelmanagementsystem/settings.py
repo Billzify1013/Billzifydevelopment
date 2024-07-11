@@ -85,10 +85,10 @@ WSGI_APPLICATION = 'hotelmanagementsystem.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'hotelmanagementsystem',
+        'NAME': 'hotelmanagement',
         'USER':'postgres',
-        'PASSWORD':'1013',
-        'HOST':'localhost'
+        'PASSWORD':'postgres123',
+        'HOST':'hotelmanagements.c5ekyoys6y25.eu-north-1.rds.amazonaws.com'
     }
 }
 

@@ -29,19 +29,16 @@ def Website(request):
 def Showqr(request,id):
     try:
         if request.user.is_authenticated:
-            user=request.user
-            checkdata = reviewQr.objects.filter(vendor=user,room_no=id).exists()
+            user = request.user
+            checkdata = reviewQr.objects.filter(vendor=user, room_no=id).exists()
             if checkdata is True:
-                qrdata = reviewQr.objects.filter(vendor=user,room_no=id)
-                return render(request,'qr_code.html',{'qrdata':qrdata})
+                qrdata = reviewQr.objects.filter(vendor=user, room_no=id)
+                return render(request, 'qr_code.html', {'qrdata':qrdata})
             else:
-                roomid = Rooms.objects.get(vendor=user,id=id)
-            # reviewardata = reviewQr.objects.create(vendor=user,room_no=roomid)
-            # reviewqrid = reviewQr.objects.get(vendor=user,id=reviewardata.id)
-            # url pattern
+                roomid = Rooms.objects.get(vendor=user, id=id)
+                # url pattern
                 url = f"http://172.20.10.3:8000/IGfKg/{roomid.id}lskgyh"  
-                # url = f"http://192.168.51.2:8000/IGfKg/{roomid.id}" samay
-                    # Generate the QR code
+                # Generate the QR code
                 qr = qrcode.QRCode(
                     version=1,
                     error_correction=qrcode.constants.ERROR_CORRECT_H,  # Use high error correction to allow for logo
@@ -73,29 +70,27 @@ def Showqr(request,id):
 
                     # Paste the logo onto the QR code
                     qr_image.paste(logo, logo_position, logo)
+                    print("Logo pasted successfully")  # Debug statement to indicate logo was pasted
 
                     # Add text (room number) to the QR code
                     draw = ImageDraw.Draw(qr_image)
                     font_path = os.path.join(settings.BASE_DIR, 'app', 'static', 'fonts', 'arial.ttf')  # Ensure you have a font file
                     font_size = 10
                     font = ImageFont.truetype(font_path, font_size)
+                    print(f"Font loaded: {font_path}")  # Debug statement to indicate font loaded
 
                     text = f"Room {roomid.room_name}"
                     text_width, text_height = draw.textsize(text, font=font)
                     text_position = ((qr_width - text_width) // 2, qr_height - text_height - 10)  # Positioning text at the bottom
 
                     draw.text(text_position, text, font=font, fill="black")
+                    print("Text added successfully")  # Debug statement to indicate text was added
 
                 except Exception as e:
                     print(f"Error processing the logo or adding text: {e}")
                     return HttpResponse("Error processing the logo or adding text.", status=500)
-
-
                 
-
-                user=request.user
-                # Create an HTTP response with the QR code image
-                # Save the QR code image to an in-memory file
+                # Continue processing the QR code and saving it to the model
                 buffer = BytesIO()
                 qr_image.save(buffer, format="PNG")
                 buffer.seek(0)
@@ -104,14 +99,12 @@ def Showqr(request,id):
                 file_name = f'user_{user.id}_qr.png'
                 file_content = ContentFile(buffer.read(), name=file_name)
 
-                # Save the file to the model's qr_code field
-                # reviewQr.qrimage.save(file_name, file_content, save=True)
-                reviewQr.objects.create(vendor=user,room_no=roomid,qrimage=file_content)
-                # reviewQr.objects.create(vendor=user,qrimage=file_content)
+                reviewQr.objects.create(vendor=user, room_no=roomid, qrimage=file_content)
+
                 response = HttpResponse(content_type="image/png")
                 qr_image.save(response, "PNG")
-                qrdata = reviewQr.objects.filter(vendor=user,room_no=id)
-                return render(request,'qr_code.html',{'qrdata':qrdata})
+                qrdata = reviewQr.objects.filter(vendor=user, room_no=id)
+                return render(request, 'qr_code.html', {'qrdata':qrdata})
         else:
             return redirect('loginpage')
     except Exception as e:
