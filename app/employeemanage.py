@@ -715,12 +715,14 @@ def mobileview(request,user):
         user = user
         if HotelProfile.objects.filter(vendor__username=user).exists():
             profile = HotelProfile.objects.get(vendor__username=user)
-        rooms = RoomsCategory.objects.filter(vendor__username=user)
-        offers = offerwebsitevendor.objects.filter(vendor__username=user)
-        service = amainities.objects.filter(vendor__username=user)
-        gallary = webgallary.objects.filter(vendor__username=user)
-        about  = webreview.objects.filter(vendor__username=user)
-        return render(request,'website.html',{'profile':profile,'rooms':rooms,'offers':offers,'service':service,'gallary':gallary,'about':about,})
+            rooms = RoomsCategory.objects.filter(vendor__username=user)
+            offers = offerwebsitevendor.objects.filter(vendor__username=user)
+            service = amainities.objects.filter(vendor__username=user)
+            gallary = webgallary.objects.filter(vendor__username=user)
+            about  = webreview.objects.filter(vendor__username=user)
+            return render(request,'website.html',{'profile':profile,'rooms':rooms,'offers':offers,'service':service,'gallary':gallary,'about':about,})
+        else:
+            return render(request, '404.html', {'error_message': "Profile Not Created!"}, status=300)  
     except Exception as e:
         return render(request, '404.html', {'error_message': str(e)}, status=500)    
     
