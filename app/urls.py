@@ -22,7 +22,7 @@ urlpatterns = [
     path('subscriptionplanpage/',views.subscriptionplanpage,name="subscriptionplanpage"),
     path('createsubscription/<str:id>/',views.createsubscription,name="createsubscription"),
     path('dologin/',views.login_view,name="dologin"),
-    path('logout/',auth_view.LogoutView.as_view(next_page='loginpage'),name='logout'),
+    path('logout/', views.logout_view, name='logout'),
     path('signup/',views.signup,name="signup"),
     path('addtax/',views.addtax,name="addtax"),
     path('foliobillingpage/',views.foliobillingpage,name="foliobillingpage"),

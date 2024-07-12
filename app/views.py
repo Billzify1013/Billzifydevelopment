@@ -1486,7 +1486,7 @@ def addadvancebooking(request):
                     val = 5
                     message_content = f"Dear guest, Your booking at {profilename.name} is confirmed. Advance payment of Rs.{advanceamount} received. Check-in date: {bookingdate}. We're thrilled to host you and make your stay unforgettable. For assistance, contact us at {profilename.contact}. -BILLZIFY"
                         
-                    base_url = "http://control.yourbulksms.com/api/sendhttp.php"
+                    base_url = "https://control.yourbulksms.com/api/sendhttp.php"
                     params = {
                         'authkey': settings.YOURBULKSMS_API_KEY,
                         'mobiles': mobile_number,
@@ -1874,7 +1874,7 @@ def generate_qr(request, url):
 from django.shortcuts import render
 
 def qr_code(request):
-    url = "http://172.20.10.3:8000/IGfKg/120"  # Replace this with your desired URL
+    url = "https://www.billzify.com/IGfKg/120"  # Replace this with your desired URL
     return render(request, 'qr_code.html', {'url': url})
 # isko chalane ke liye url map krni hogi empty us din jase 
 
@@ -1905,3 +1905,13 @@ def password_reset_request(request):
     except Exception as e:
         return render(request, '404.html', {'error_message': str(e)}, status=500)
     
+
+from django.contrib.auth import logout as auth_logout
+
+def logout_view(request):
+    auth_logout(request)  # Log out the user
+    response = redirect('loginpage')  # Redirect to the login page or any other page
+    # Clear all cookies
+    for cookie in request.COOKIES:
+        response.delete_cookie(cookie)
+    return response

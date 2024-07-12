@@ -26,6 +26,91 @@ def Website(request):
     except Exception as e:
         return render(request, '404.html', {'error_message': str(e)}, status=500)
 
+# def Showqr(request,id):
+#     try:
+#         if request.user.is_authenticated:
+#             user = request.user
+#             checkdata = reviewQr.objects.filter(vendor=user, room_no=id).exists()
+#             if checkdata is True:
+#                 qrdata = reviewQr.objects.filter(vendor=user, room_no=id)
+#                 return render(request, 'qr_code.html', {'qrdata':qrdata})
+#             else:
+#                 roomid = Rooms.objects.get(vendor=user, id=id)
+#                 # url pattern
+#                 url = f"https://www.billzify.com/IGfKg/{roomid.id}lskgyh"  
+#                 # Generate the QR code
+#                 qr = qrcode.QRCode(
+#                     version=1,
+#                     error_correction=qrcode.constants.ERROR_CORRECT_H,  # Use high error correction to allow for logo
+#                     box_size=10,
+#                     border=4,
+#                 )
+#                 qr.add_data(url)
+#                 qr.make(fit=True)
+                
+#                 qr_image = qr.make_image(fill_color="black", back_color="white").convert('RGB')
+
+#                 # Get the logo image path from the static files
+#                 logo_path = os.path.join(settings.BASE_DIR, 'app', 'static', 'img', 'newshadowlogo.png')
+#                 print(f"Logo path: {logo_path}")  # Debug statement to print the logo path
+
+#                 if not os.path.exists(logo_path):
+#                     print(f"Logo file not found at: {logo_path}")
+#                     return HttpResponseNotFound("Logo image not found.")
+                
+#                 try:
+#                     # Open the logo image
+#                     logo = Image.open(logo_path).convert("RGBA")
+
+#                     # Calculate logo size and position
+#                     qr_width, qr_height = qr_image.size
+#                     logo_size = qr_width // 5
+#                     logo = logo.resize((logo_size, logo_size), Image.ANTIALIAS)
+#                     logo_position = ((qr_width - logo_size) // 2, (qr_height - logo_size) // 2)
+
+#                     # Paste the logo onto the QR code
+#                     qr_image.paste(logo, logo_position, logo)
+#                     print("Logo pasted successfully")  # Debug statement to indicate logo was pasted
+
+#                     # Add text (room number) to the QR code
+#                     draw = ImageDraw.Draw(qr_image)
+#                     font_path = os.path.join(settings.BASE_DIR, 'app', 'static', 'fonts', 'arial.ttf')  # Ensure you have a font file
+#                     font_size = 10
+#                     font = ImageFont.truetype(font_path, font_size)
+#                     print(f"Font loaded: {font_path}")  # Debug statement to indicate font loaded
+
+#                     text = f"Room {roomid.room_name}"
+#                     text_width, text_height = draw.textsize(text, font=font)
+#                     text_position = ((qr_width - text_width) // 2, qr_height - text_height - 10)  # Positioning text at the bottom
+
+#                     draw.text(text_position, text, font=font, fill="black")
+#                     print("Text added successfully")  # Debug statement to indicate text was added
+
+#                 except Exception as e:
+#                     print(f"Error processing the logo or adding text: {e}")
+#                     return HttpResponse("Error processing the logo or adding text.", status=500)
+                
+#                 # Continue processing the QR code and saving it to the model
+#                 buffer = BytesIO()
+#                 qr_image.save(buffer, format="PNG")
+#                 buffer.seek(0)
+
+#                 # Create a Django file from the in-memory file
+#                 file_name = f'user_{user.id}_qr.png'
+#                 file_content = ContentFile(buffer.read(), name=file_name)
+
+#                 reviewQr.objects.create(vendor=user, room_no=roomid, qrimage=file_content)
+
+#                 response = HttpResponse(content_type="image/png")
+#                 qr_image.save(response, "PNG")
+#                 qrdata = reviewQr.objects.filter(vendor=user, room_no=id)
+#                 return render(request, 'qr_code.html', {'qrdata':qrdata})
+#         else:
+#             return redirect('loginpage')
+#     except Exception as e:
+#         return render(request, '404.html', {'error_message': str(e)}, status=500)
+    
+# try this code in which remove billzify logo in center and its working properly
 def Showqr(request,id):
     try:
         if request.user.is_authenticated:
@@ -33,63 +118,41 @@ def Showqr(request,id):
             checkdata = reviewQr.objects.filter(vendor=user, room_no=id).exists()
             if checkdata is True:
                 qrdata = reviewQr.objects.filter(vendor=user, room_no=id)
-                return render(request, 'qr_code.html', {'qrdata':qrdata})
+                return render(request, 'qr_code.html', {'qrdata': qrdata})
             else:
                 roomid = Rooms.objects.get(vendor=user, id=id)
-                # url pattern
-                url = f"http://172.20.10.3:8000/IGfKg/{roomid.id}lskgyh"  
+                # URL pattern
+                url = f"https://www.billzify.com/IGfKg/{roomid.id}lskgyh"
                 # Generate the QR code
                 qr = qrcode.QRCode(
                     version=1,
-                    error_correction=qrcode.constants.ERROR_CORRECT_H,  # Use high error correction to allow for logo
+                    error_correction=qrcode.constants.ERROR_CORRECT_H,
                     box_size=10,
                     border=4,
                 )
                 qr.add_data(url)
                 qr.make(fit=True)
-                
+
                 qr_image = qr.make_image(fill_color="black", back_color="white").convert('RGB')
 
-                # Get the logo image path from the static files
-                logo_path = os.path.join(settings.BASE_DIR, 'app', 'static', 'img', 'newshadowlogo.png')
-                print(f"Logo path: {logo_path}")  # Debug statement to print the logo path
-
-                if not os.path.exists(logo_path):
-                    print(f"Logo file not found at: {logo_path}")
-                    return HttpResponseNotFound("Logo image not found.")
-                
                 try:
-                    # Open the logo image
-                    logo = Image.open(logo_path).convert("RGBA")
-
-                    # Calculate logo size and position
-                    qr_width, qr_height = qr_image.size
-                    logo_size = qr_width // 5
-                    logo = logo.resize((logo_size, logo_size), Image.ANTIALIAS)
-                    logo_position = ((qr_width - logo_size) // 2, (qr_height - logo_size) // 2)
-
-                    # Paste the logo onto the QR code
-                    qr_image.paste(logo, logo_position, logo)
-                    print("Logo pasted successfully")  # Debug statement to indicate logo was pasted
-
                     # Add text (room number) to the QR code
                     draw = ImageDraw.Draw(qr_image)
                     font_path = os.path.join(settings.BASE_DIR, 'app', 'static', 'fonts', 'arial.ttf')  # Ensure you have a font file
-                    font_size = 10
+                    font_size = 20  # Adjust font size as needed
                     font = ImageFont.truetype(font_path, font_size)
-                    print(f"Font loaded: {font_path}")  # Debug statement to indicate font loaded
 
                     text = f"Room {roomid.room_name}"
                     text_width, text_height = draw.textsize(text, font=font)
+                    qr_width, qr_height = qr_image.size
                     text_position = ((qr_width - text_width) // 2, qr_height - text_height - 10)  # Positioning text at the bottom
 
                     draw.text(text_position, text, font=font, fill="black")
-                    print("Text added successfully")  # Debug statement to indicate text was added
 
                 except Exception as e:
-                    print(f"Error processing the logo or adding text: {e}")
-                    return HttpResponse("Error processing the logo or adding text.", status=500)
-                
+                    print(f"Error adding text: {e}")
+                    return HttpResponse("Error adding text.", status=500)
+
                 # Continue processing the QR code and saving it to the model
                 buffer = BytesIO()
                 qr_image.save(buffer, format="PNG")
@@ -104,12 +167,13 @@ def Showqr(request,id):
                 response = HttpResponse(content_type="image/png")
                 qr_image.save(response, "PNG")
                 qrdata = reviewQr.objects.filter(vendor=user, room_no=id)
-                return render(request, 'qr_code.html', {'qrdata':qrdata})
+                return render(request, 'qr_code.html', {'qrdata': qrdata})
         else:
             return redirect('loginpage')
     except Exception as e:
         return render(request, '404.html', {'error_message': str(e)}, status=500)
     
+
 
 def IGfKg(request,id):
     try:
@@ -144,8 +208,8 @@ def addwebsitedata(request):
             if checkdata is False:
                 logoname = request.POST.get('logoname')
                 googlelink = request.POST.get('googlelink')
-                Websitelink = f"http://172.20.10.3:8000/mobileview/{user}"  
-                laundryserviceurl = f"http://172.20.10.3:8000/laundrysrvs/{user.id}lskgyh10"  
+                Websitelink = f"https://www.billzify.com/mobileview/{user}"  
+                laundryserviceurl = f"https://www.billzify.com/laundrysrvs/{user.id}lskgyh10"  
                 websitelinks.objects.create(vendor=user,logoname=logoname,googlelink=googlelink,websitelink=Websitelink,laundryurl=laundryserviceurl)
                 qr=reviewQr.objects.filter(vendor=user).all()
                 roomdata = Rooms.objects.filter(vendor=user)
