@@ -158,3 +158,4 @@ SESSION_COOKIE_AGE = 86400  # 24 hours in seconds
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 
+CSRF_TRUSTED_ORIGINS = ['https://www.billzify.com','https://billzify.com']
