@@ -176,6 +176,71 @@ def Website(request):
 
 # new code remove all the try and except
 
+# def Showqr(request, id):
+#     if request.user.is_authenticated:
+#         user = request.user
+        
+#         # Check if reviewQr exists for the vendor and room_no
+#         if reviewQr.objects.filter(vendor=user, room_no=id).exists():
+#             qrdata = reviewQr.objects.filter(vendor=user, room_no=id)
+#             return render(request, 'qr_code.html', {'qrdata': qrdata})
+        
+#         # If reviewQr does not exist, try to get the room details
+#         roomid = None
+#         try:
+#             roomid = Rooms.objects.get(vendor=user, id=id)
+#         except Rooms.DoesNotExist:
+#             return render(request, '404.html', {'error_message': 'Room not found'}, status=404)
+        
+#         # URL pattern
+#         url = f"https://www.billzify.com/IGfKg/{roomid.id}lskgyh"
+#         # Generate the QR code
+#         qr = qrcode.QRCode(
+#             version=1,
+#             error_correction=qrcode.constants.ERROR_CORRECT_H,
+#             box_size=10,
+#             border=4,
+#         )
+#         qr.add_data(url)
+#         qr.make(fit=True)
+
+#         qr_image = qr.make_image(fill_color="black", back_color="white").convert('RGB')
+
+#         # Add text (room number) to the QR code
+#         draw = ImageDraw.Draw(qr_image)
+#         font_path = os.path.join(settings.BASE_DIR, 'app', 'static', 'fonts', 'arial.ttf')  # Ensure you have a font file
+#         font_size = 20  # Adjust font size as needed
+#         font = ImageFont.truetype(font_path, font_size)
+
+#         text = f"Room {roomid.room_name}"
+#         text_width, text_height = draw.textsize(text, font=font)
+#         qr_width, qr_height = qr_image.size
+#         text_position = ((qr_width - text_width) // 2, qr_height - text_height - 10)  # Positioning text at the bottom
+
+#         draw.text(text_position, text, font=font, fill="black")
+
+#         # Continue processing the QR code and saving it to the model
+#         buffer = BytesIO()
+#         qr_image.save(buffer, format="PNG")
+#         buffer.seek(0)
+
+#         # Create a Django file from the in-memory file
+#         file_name = f'user_{user.id}_qr.png'
+#         file_content = ContentFile(buffer.read(), name=file_name)
+
+#         # Save the QR code image to reviewQr model
+#         reviewQr.objects.create(vendor=user, room_no=roomid, qrimage=file_content)
+
+#         # Return the QR code image as HTTP response
+#         response = HttpResponse(content_type="image/png")
+#         qr_image.save(response, "PNG")
+#         qrdata = reviewQr.objects.filter(vendor=user, room_no=id)
+#         return render(request, 'qr_code.html', {'qrdata': qrdata})
+
+#     else:
+#         return redirect('loginpage')
+
+
 def Showqr(request, id):
     if request.user.is_authenticated:
         user = request.user
@@ -186,7 +251,6 @@ def Showqr(request, id):
             return render(request, 'qr_code.html', {'qrdata': qrdata})
         
         # If reviewQr does not exist, try to get the room details
-        roomid = None
         try:
             roomid = Rooms.objects.get(vendor=user, id=id)
         except Rooms.DoesNotExist:
@@ -194,6 +258,7 @@ def Showqr(request, id):
         
         # URL pattern
         url = f"https://www.billzify.com/IGfKg/{roomid.id}lskgyh"
+        
         # Generate the QR code
         qr = qrcode.QRCode(
             version=1,
@@ -208,18 +273,17 @@ def Showqr(request, id):
 
         # Add text (room number) to the QR code
         draw = ImageDraw.Draw(qr_image)
-        font_path = os.path.join(settings.BASE_DIR, 'app', 'static', 'fonts', 'arial.ttf')  # Ensure you have a font file
-        font_size = 20  # Adjust font size as needed
-        font = ImageFont.truetype(font_path, font_size)
-
         text = f"Room {roomid.room_name}"
+        font_size = 30
+        font = ImageFont.truetype("arial.ttf", font_size)  # Load Arial font with larger size
+        
         text_width, text_height = draw.textsize(text, font=font)
         qr_width, qr_height = qr_image.size
-        text_position = ((qr_width - text_width) // 2, qr_height - text_height - 10)  # Positioning text at the bottom
+        text_position = ((qr_width - text_width) // 2, qr_height - text_height - 20)  # Positioning text at the bottom with larger margin
 
         draw.text(text_position, text, font=font, fill="black")
 
-        # Continue processing the QR code and saving it to the model
+        # Save QR code image to a buffer
         buffer = BytesIO()
         qr_image.save(buffer, format="PNG")
         buffer.seek(0)
@@ -239,7 +303,6 @@ def Showqr(request, id):
 
     else:
         return redirect('loginpage')
-
 
 
 
