@@ -283,7 +283,7 @@ def Showqr(request, id):
 
         draw.text(text_position, text, font=font, fill="black")
 
-        # Save QR code image to a buffer
+        
         buffer = BytesIO()
         qr_image.save(buffer, format="PNG")
         buffer.seek(0)
