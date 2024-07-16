@@ -1486,7 +1486,7 @@ def addadvancebooking(request):
                     val = 5
                     message_content = f"Dear guest, Your booking at {profilename.name} is confirmed. Advance payment of Rs.{advanceamount} received. Check-in date: {bookingdate}. We're thrilled to host you and make your stay unforgettable. For assistance, contact us at {profilename.contact}. -BILLZIFY"
                         
-                    base_url = "https://control.yourbulksms.com/api/sendhttp.php"
+                    base_url = "http://control.yourbulksms.com/api/sendhttp.php"
                     params = {
                         'authkey': settings.YOURBULKSMS_API_KEY,
                         'mobiles': mobile_number,
