@@ -163,7 +163,7 @@ def hourlycheckinroom(request):
                                             cash_amount=cashamount,online_amount=onlineamount,  grand_total_amount=grandtotalamount,modeofpayment=paymentstatus,room_no=roomno,taxtype=taxtypes)
 
             invoiceitem = InvoiceItem.objects.create(vendor=user,invoice=Invoiceid,description=roomno,quantity_likedays=1,
-                                    paidstatus=statuspaid,price=subtotal,cgst_rate=taxrates,sgst_rate=taxrates,hsncode=hscsac,total_amount=roomspriceplusgst)  
+                                    paidstatus=statuspaid,price=subtotal,cgst_rate=taxrates,sgst_rate=taxrates,hsncode=hscsac,total_amount=grandtotalamount)  
             
             return redirect('hourlyhomepage')
         else:
