@@ -315,6 +315,7 @@
                                 <th>Qty/Day</th>
                                 <th>Total
                                 </th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -334,13 +335,30 @@
                                 <td style="font-size:18px">{{iteams.sgst_rate}} %  </td>
                                 <td style="font-size:18px">{{iteams.sgst_rate}} %  </td>
                                 {%else%}
-                                <td style="font-size:18px">{{iteams.sgst_rate|add:iteams.sgst_rate}}% </td>
+                                    {% if iteams.sgst_rate == 2.50 %}
+                                    <td style="font-size:18px"> 5% </td>
+                                    {%else%}
+                                    <td style="font-size:18px">{{iteams.sgst_rate|add:iteams.sgst_rate}}% </td>
+                                    {%endif%}    
                                 {%endif%}
                                 {%endfor%}
                                 <td style="font-size:18px">{{iteams.hsncode}}</td>
                                 <td style="font-size:18px">{{iteams.price}}</td>
                                 <td style="font-size:18px">{{iteams.quantity_likedays}}</td>
                                 <td style="font-size:18px">{{iteams.total_amount}}</td>
+                                <td>
+                                    {% comment %} <a href="{% url 'updateemployee' id=data.id %}"><span class="badge bg-label-info  "><i class='bx bxs-edit-alt'></i></span></a> {% endcomment %}
+                                    <form action="{% url 'deleteitemstofolio' %}" method="post">
+                                        {% csrf_token %}
+                                        {%for data in invoice_data%}
+                                        <input type="hidden" name="invoiceid" value="{{data.id}}" />
+                                        {%endfor%}
+                                        <input type="hidden" name="invoiceitemsid" value="{{iteams.id}}" />
+                                    <button class="btn" type="submit"><span class="badge bg-label-danger  "><i class='bx bxs-trash'></i></span></button>
+                                    </form>
+                                </td>
+
+                               
                             </tr>
                             {%endfor%}
                         </tbody>

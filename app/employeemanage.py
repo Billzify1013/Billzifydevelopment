@@ -985,3 +985,25 @@ def addlaundryitems(request):
     
      
 
+def userdatacheckbychandanbillsteam(request):
+    try:
+        if request.user.is_superuser:
+            current_date = datetime.now().date()
+            userdata = Subscription.objects.order_by('user', 'end_date').distinct('user')
+            return render(request,'usersdatabybills.html',{'userdata':userdata})
+        else:
+            return redirect('loginpage')
+    except Exception as e:
+        return render(request, '404.html', {'error_message': str(e)}, status=500)    
+    
+def searchuserdata(request):
+    try:
+        if request.user.is_superuser and request.method=="POST":
+            startdate = request.POST.get('startdate')
+            enddate = request.POST.get('enddate')
+            userdata = Subscription.objects.filter(end_date__range=[startdate,enddate]).all()
+            return render(request,'usersdatabybills.html',{'userdata':userdata})
+        else:
+            return redirect('loginpage')
+    except Exception as e:
+        return render(request, '404.html', {'error_message': str(e)}, status=500)  

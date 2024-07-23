@@ -730,7 +730,7 @@ def addguestdata(request):
                                                 taxtype=taxtypes,online_amount=onlineamount ,cash_amount=cashamount,)
             
             invoiceitem = InvoiceItem.objects.create(vendor=user,invoice=Invoiceid,description=room_details,quantity_likedays=staydays,
-                                    paidstatus=statuspaid,price=roomprice,cgst_rate=tax_rate,sgst_rate=tax_rate,hsncode=hsnno,total_amount=totalitemamount)  
+                                    paidstatus=statuspaid,price=roomprice,cgst_rate=tax_rate,sgst_rate=tax_rate,hsncode=hsnno,total_amount=grandtotal_amount)  
             Rooms.objects.filter(vendor=user,room_name=roomno).update(checkin=1)
 
         
@@ -1477,44 +1477,45 @@ def addadvancebooking(request):
                                                 ,checkoutdate=bookenddate,bookingstatus=True,channal=channal)
             if Saveadvancebookdata:
                 usermsglimit = Messgesinfo.objects.get(vendor=user)
-                if usermsglimit.defaultlimit > usermsglimit.changedlimit :
-                    addmsg = usermsglimit.changedlimit + 2
-                    Messgesinfo.objects.filter(vendor=user).update(changedlimit=addmsg)
-                    profilename = HotelProfile.objects.get(vendor=user)
-                    mobile_number = phone
-                    user_name = "chandan"
-                    val = 5
-                    message_content = f"Dear guest, Your booking at {profilename.name} is confirmed. Advance payment of Rs.{advanceamount} received. Check-in date: {bookingdate}. We're thrilled to host you and make your stay unforgettable. For assistance, contact us at {profilename.contact}. -BILLZIFY"
+                if channal.channalname== "self" :
+                    if usermsglimit.defaultlimit > usermsglimit.changedlimit :
+                        addmsg = usermsglimit.changedlimit + 2
+                        Messgesinfo.objects.filter(vendor=user).update(changedlimit=addmsg)
+                        profilename = HotelProfile.objects.get(vendor=user)
+                        mobile_number = phone
+                        user_name = "chandan"
+                        val = 5
+                        message_content = f"Dear guest, Your booking at {profilename.name} is confirmed. Advance payment of Rs.{advanceamount} received. Check-in date: {bookingdate}. We're thrilled to host you and make your stay unforgettable. For assistance, contact us at {profilename.contact}. -BILLZIFY"
+                            
+                        base_url = "http://control.yourbulksms.com/api/sendhttp.php"
+                        params = {
+                            'authkey': settings.YOURBULKSMS_API_KEY,
+                            'mobiles': mobile_number,
+                            'sender':  'BILZFY',
+                            'route': '2',
+                            'country': '0',
+                            'DLT_TE_ID': '1707171861809414803'
+                        }
+                        encoded_message = urllib.parse.urlencode({'message': message_content})
+                        url = f"{base_url}?authkey={params['authkey']}&mobiles={params['mobiles']}&sender={params['sender']}&route={params['route']}&country={params['country']}&DLT_TE_ID={params['DLT_TE_ID']}&{encoded_message}"
                         
-                    base_url = "http://control.yourbulksms.com/api/sendhttp.php"
-                    params = {
-                        'authkey': settings.YOURBULKSMS_API_KEY,
-                        'mobiles': mobile_number,
-                        'sender':  'BILZFY',
-                        'route': '2',
-                        'country': '0',
-                        'DLT_TE_ID': '1707171861809414803'
-                    }
-                    encoded_message = urllib.parse.urlencode({'message': message_content})
-                    url = f"{base_url}?authkey={params['authkey']}&mobiles={params['mobiles']}&sender={params['sender']}&route={params['route']}&country={params['country']}&DLT_TE_ID={params['DLT_TE_ID']}&{encoded_message}"
-                    
-                    try:
-                        response = requests.get(url)
-                        if response.status_code == 200:
-                            try:
-                                response_data = response.json()
-                                if response_data.get('Status') == 'success':
-                                    messages.success(request, 'SMS sent successfully.')
-                                else:
-                                    messages.success(request, response_data.get('Description', 'Failed to send SMS'))
-                            except ValueError:
-                                messages.success(request, 'Failed to parse JSON response')
-                        else:
-                            messages.success(request, f'Failed to send SMS. Status code: {response.status_code}')
-                    except requests.RequestException as e:
-                        messages.success(request, f'Error: {str(e)}')
-                else:
-                    messages.error(request,'Ooooops! Looks like your message balance is depleted. Please recharge to keep sending SMS notifications to your guests.CLICK HERE TO RECHARGE!')
+                        try:
+                            response = requests.get(url)
+                            if response.status_code == 200:
+                                try:
+                                    response_data = response.json()
+                                    if response_data.get('Status') == 'success':
+                                        messages.success(request, 'SMS sent successfully.')
+                                    else:
+                                        messages.success(request, response_data.get('Description', 'Failed to send SMS'))
+                                except ValueError:
+                                    messages.success(request, 'Failed to parse JSON response')
+                            else:
+                                messages.success(request, f'Failed to send SMS. Status code: {response.status_code}')
+                        except requests.RequestException as e:
+                            messages.success(request, f'Error: {str(e)}')
+                    else:
+                        messages.error(request,'Ooooops! Looks like your message balance is depleted. Please recharge to keep sending SMS notifications to your guests.CLICK HERE TO RECHARGE!')
             else:
                 messages.success(request, 'No data found matching the query')
             
@@ -1915,3 +1916,61 @@ def logout_view(request):
     for cookie in request.COOKIES:
         response.delete_cookie(cookie)
     return response
+
+
+
+from django.core.exceptions import ValidationError
+def deleteitemstofolio(request):
+    try:
+        if request.user.is_authenticated and request.method == "POST":
+            user = request.user
+            invoiceid = request.POST.get('invoiceid')
+            invoiceitemsid = request.POST.get('invoiceitemsid')
+            if Invoice.objects.filter(vendor=user,id=invoiceid).exists():
+                if InvoiceItem.objects.filter(vendor=user,id=invoiceitemsid,invoice_id=invoiceid).exists():
+                    invoiceitemdata = InvoiceItem.objects.get(vendor=user,id=invoiceitemsid,invoice_id=invoiceid)
+                    print(invoiceitemdata.invoice.customer,invoiceitemdata.description,invoiceitemdata.total_amount,invoiceitemdata.cgst_rate)
+                    try:
+                        int_value = int(invoiceitemdata.description)
+                        # If successful, filter using Q objects to handle both int and str queries
+                        if  Rooms.objects.filter(vendor=user,room_name=int_value,price=invoiceitemdata.price).exists():
+                            pass
+                    except (ValueError, TypeError, ValidationError):
+                        if invoiceitemdata.cgst_rate == 0.00:
+                            invoiceamt = invoiceitemdata.total_amount
+                            invoicedata = Invoice.objects.get(vendor=user,id=invoiceid)
+                            totalamt = invoicedata.total_item_amount - invoiceamt
+                            subtotalamt = invoicedata.subtotal_amount - invoiceamt
+                            grandtotalamt = invoicedata.grand_total_amount - invoiceamt
+                            Invoice.objects.filter(vendor=user,id=invoiceid).update(total_item_amount=totalamt,subtotal_amount=subtotalamt,grand_total_amount=grandtotalamt)
+                            InvoiceItem.objects.filter(vendor=user,id=invoiceitemsid,invoice_id=invoiceid).delete()
+                            
+                        else:
+                            invoiceamt = invoiceitemdata.total_amount
+                            qtys = invoiceitemdata.quantity_likedays
+                            priceproduct = invoiceitemdata.price
+                            print("acutal price=",priceproduct*qtys,"taxprice =",invoiceamt-priceproduct*qtys)
+                            invoicedata = Invoice.objects.get(vendor=user,id=invoiceid)
+                            totalamt = invoicedata.total_item_amount - priceproduct*qtys
+                            subtotalamt = invoicedata.subtotal_amount - invoiceamt
+                            cgstamt = invoicedata.sgst_amount - (invoiceamt-priceproduct*qtys)/2
+                            gstamt = invoicedata.gst_amount - (invoiceamt-priceproduct*qtys)/2
+                            grandtotalamt = invoicedata.grand_total_amount - invoiceamt
+                            Invoice.objects.filter(vendor=user,id=invoiceid).update(gst_amount=gstamt,sgst_amount=cgstamt,total_item_amount=totalamt,subtotal_amount=subtotalamt,grand_total_amount=grandtotalamt)
+                            InvoiceItem.objects.filter(vendor=user,id=invoiceitemsid,invoice_id=invoiceid).delete()
+                            
+                    
+                else:
+                    messages.error(request, 'Invoice item not exists')
+            else:
+                messages.error(request, 'Invoice does not exist')
+            return redirect('invoicepage', id=invoiceid)
+        
+        else:
+            return redirect('loginpage')
+        
+    except Exception as e:
+            return render(request, '404.html', {'error_message': str(e)}, status=500)    
+
+
+    
