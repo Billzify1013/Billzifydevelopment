@@ -1952,7 +1952,7 @@ def deleteitemstofolio(request):
                             print("acutal price=",priceproduct*qtys,"taxprice =",invoiceamt-priceproduct*qtys)
                             invoicedata = Invoice.objects.get(vendor=user,id=invoiceid)
                             totalamt = invoicedata.total_item_amount - priceproduct*qtys
-                            subtotalamt = invoicedata.subtotal_amount - invoiceamt
+                            subtotalamt = invoicedata.subtotal_amount - priceproduct*qtys
                             cgstamt = invoicedata.sgst_amount - (invoiceamt-priceproduct*qtys)/2
                             gstamt = invoicedata.gst_amount - (invoiceamt-priceproduct*qtys)/2
                             grandtotalamt = invoicedata.grand_total_amount - invoiceamt
