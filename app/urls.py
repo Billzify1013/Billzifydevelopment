@@ -72,7 +72,11 @@ urlpatterns = [
     path('addlaundryitems/',employeemanage.addlaundryitems,name="addlaundryitems"),
     path('Product/',employeemanage.Product,name="Product"),
     path('deleteproduct/<int:id>/',employeemanage.deleteproduct,name="deleteproduct"),
-
+    # delete product in the folio url
+    path('deleteitemstofolio/',views.deleteitemstofolio,name="deleteitemstofolio"),
+    # for users check data
+    path('userdatacheckbychandanbillsteam/',employeemanage.userdatacheckbychandanbillsteam,name="userdatacheckbychandanbillsteam"),
+    path('searchuserdata/',employeemanage.searchuserdata,name="searchuserdata"),
 
     # ajax data
     path('getloyltydataajax',loyltys.getloyltydataajax,name="getloyltydataajax"),

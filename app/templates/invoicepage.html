@@ -267,7 +267,11 @@
                                 <td style="font-size:13px">{{iteams.sgst_rate}} %  </td>
                                 <td style="font-size:13px">{{iteams.sgst_rate}} %  </td>
                                 {%else%}
-                                <td style="font-size:13px">{{iteams.sgst_rate|add:iteams.sgst_rate}} %  </td>
+                                    {% if iteams.sgst_rate == 2.50 %}
+                                    <td style="font-size:18px"> 5% </td>
+                                    {%else%}
+                                    <td style="font-size:18px">{{iteams.sgst_rate|add:iteams.sgst_rate}}% </td>
+                                    {%endif%}  
                                 {%endif%}
                                 {%endfor%}
                                 <td style="font-size:13px">{{iteams.hsncode}}</td>
