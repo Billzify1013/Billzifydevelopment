@@ -187,7 +187,6 @@
 {%endif%}
 
 
-
    
         <div class="invoice-container mt-0" id="invoice" >
             <div class="header" style="margin-top:-30px">
@@ -203,23 +202,22 @@
             <div class="invoice-details">{%for data in invoice_data%}
                 <div class="left">
                     <h6>Invoice</h6>
-                    <p>Invoice #: {{data.invoice_number}}</p>
-                    <p>Date: {{data.invoice_date}}<br>
-                        CheckIn date: {{data.customer.checkindate}}<br>
-                        CheckOut date: {{data.customer.checkoutdate}}</p>
+                    <p>Invoice #: {{data.invoicenumber}}</p>
+                    <p>Date: {{data.invoicedate}}<br>
                     
                     
                 </div> 
                 <div class="center">
-                    <h6>Guest Information</h6>
-                <p>Name: {{data.customer.guestname}}<br>
-                Phone: {{data.customer.guestphome}}<br>
-                    address: {{data.customer.guestcity}}<br>
-                    Guests: {{data.customer.noofguest}}<br>
+                    <h6>Customer Information</h6>
+                <p>Name: {{data.customername}}<br>
+                Phone: {{data.customercontact}}<br>
+                    address: {{data.customeraddress}}<br>
+                    Email: {{data.customeremail}}<br>
 
-                </p>
-                {%if data.customer_gst_number%}
-                <p>gstin: {{data.customer_gst_number}}</p>
+                
+                {%if data.customergst%}
+                Customer gstin: {{data.customergst}}<br>
+                Company: {{data.customercompany}}</p>
                 {%endif%}
                 </div>
                 {%endfor%}
@@ -242,43 +240,35 @@
                     <table class="table " >
                       <thead class="table-light">
                             <tr>
-                                <th>Room No</th>
-                                {%for data in invoice_data%}
-                                {%if data.taxtype == 'GST'%}
-                                <th>Cgst</th>
-                                <th>Sgst</th>
-                                {%else%}
-                                <th>Igst</th>
-                                {%endif%}
-                                {%endfor%}
-                                <th>HSN/SAC</th>
-                                <th>Price</th>
-                                <th>Qty/Day</th>
-                                <th>Total
+                                <th>Items Price Qty</th>
+                               
+                                <th>Tax HSN Code</th>
+                                <th>Total</th>
+                                <th>Discount, Subtotal, Tax Amount </th>
+                                
+                                <th>Grand Total
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
                             {%for iteams in invoiceitemdata%}
                             <tr >
-                                <td style="font-size:13px">{{iteams.description}}</td>
-                                {%for data in invoice_data%}
-                                {%if data.taxtype == 'GST'%}
-                                <td style="font-size:13px">{{iteams.sgst_rate}} %  </td>
-                                <td style="font-size:13px">{{iteams.sgst_rate}} %  </td>
-                                {%else%}
-                                    {% if iteams.sgst_rate == 2.50 %}
-                                    <td style="font-size:18px"> 5% </td>
-                                    {%else%}
-                                    <td style="font-size:18px">{{iteams.sgst_rate|add:iteams.sgst_rate}}% </td>
-                                    {%endif%}  
-                                {%endif%}
-                                {%endfor%}
-                                <td style="font-size:13px">{{iteams.hsncode}}</td>
-                                <td style="font-size:13px">{{iteams.price}}</td>
-                                <td style="font-size:13px">{{iteams.quantity_likedays}}</td>
-                                <td style="font-size:13px">{{iteams.total_amount}}</td>
-                            </tr>
+                                <td style="font-size:13px">{{iteams.description}}<br>
+                                    PRICE: {{iteams.price}}<br>
+                                    QTY: {{iteams.quantity}}
+                                </td>
+                               
+                                <td>{{iteams.tax_rate}}%<br>
+                                    {{iteams.hsncode}}
+                                </td>
+                                <td>{{iteams.total_amount}}</td>
+                                <td>D:{{iteams.discount_amount}}<br>
+                                S:{{iteams.subtotal_amt}}<br>
+                                T:{{iteams.tax_amt}}</td>
+                                <td>{{iteams.grand_total}}</td>
+
+                                
+                               
                             {%endfor%}
                         </tbody>
                     </table>
@@ -328,8 +318,7 @@
                   </li> 
                   {%endfor%}
                 </ul>
-                <span class="mt-2 mb-2 text " style="font-size:9px"><i class='bx bxs-info-circle'></i>Rooms have discount, so their tax calculation are done after applying the discount.</span>
-            
+                
               </div>
             </div>
 
