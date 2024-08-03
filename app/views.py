@@ -926,13 +926,13 @@ def checkoutroom(request):
                     else:
                           Invoice.objects.filter(vendor=user,id=invoice_id).update(cash_amount=invoicegrandtotalpaymentstatus,invoice_status=True)          
                 elif paymentstatus == "cash":
-                    Invoice.objects.filter(vendor=user,id=invoice_id).update(cash_amount=invoicegrandtotalpaymentstatus,invoice_status=True)
+                    Invoice.objects.filter(vendor=user,id=invoice_id).update(cash_amount=invoicegrandtotalpaymentstatus,online_amount=0.00,invoice_status=True)
                 elif paymentstatus =="unpaid":
                     duedate = request.POST.get('duedate')
                     Invoice.objects.filter(vendor=user,id=invoice_id).update(online_amount=invoicegrandtotalpaymentstatus,invoice_status=False,invoice_number="unpaid")
                     CustomerCredit.objects.create(vendor=user,customer_name=GUESTIDs.customer.guestname,amount=invoicegrandtotalpaymentstatus,due_date=duedate,invoice=GUESTIDs,phone=GUESTIDs.customer.guestphome)
                 else:
-                    Invoice.objects.filter(vendor=user,id=invoice_id).update(online_amount=invoicegrandtotalpaymentstatus,invoice_status=True)
+                    Invoice.objects.filter(vendor=user,id=invoice_id).update(cash_amount=0.00,online_amount=invoicegrandtotalpaymentstatus,invoice_status=True)
                 guestdatas = Gueststay.objects.get(vendor=user,id=GUESTID)
                 current_date = datetime.now()
                 # Get the current date

@@ -38,6 +38,7 @@
             <th>user</th>
             <th>Hotel name</th>
             <th>Mobile number</th>
+            <th>plan details</th>
             <th>expiry date</th>
         </tr>
     </thead>
@@ -45,6 +46,8 @@
         {%for i in userdata%}
         <tr>
             <td>{{i.user.username}}</td>
+            <td>{{i.plan.name}}
+            {{i.plan.price}}</td>
             <td>{{i.user.first_name}}</td>
             <td>{{i.user.last_name}}</td>
             <td>{{i.end_date}}</td>

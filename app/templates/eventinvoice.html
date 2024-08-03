@@ -183,7 +183,7 @@
                 <div class="invoice-details" style="margin-top:-0px">
                     {%for i in eventdata%}
                     <div class="left">
-                        <h1>Invoice</h1>
+                        <h6>Invoice</h6>
                         <p>Invocie Date: {{i.invoice_date}}</p>
                         <p>Invocie Number: {{i.invoice_number}}</p>
                         <p>Event Start Date : {{i.start_date}}</p>
@@ -204,7 +204,7 @@
                     
                     <div class="right">
                         {%for i in profiledata%}
-                    <h2>{{i.name}}</h2>
+                    <h6>{{i.name}}</h6>
                     <p>{{i.address}}</p>
                     <p>{{i.counrty}}, {{i.zipcode}}</p>
                     <p>Email:{{i.email}}</p>
@@ -226,7 +226,7 @@
                                     <th > description </th>
                                     {%for i in eventdata%}
                                     {%if i.taxtype == "GST" %}
-                                    <th>GST & Sgst </th>
+                                    <th>CGST & Sgst </th>
                                     {%else%}
                                     <th>IGST</th>
                                     {%endif%}
@@ -286,7 +286,7 @@
                         <span class="text float-end">₹ {{data.subtotal}}</span><br>
                         {%for i in eventdata%}
                         {%if i.taxtype == "GST" %}
-                        <span class="text w-50">Tax (GST & IGST) Total Amount</span> 
+                        <span class="text w-50">Tax (CGST & SGST) Total Amount</span> 
                         <span class="text float-end">₹ {{data.taxamount}}</span><br>
                         {%else%}
                         <span class="text w-50">IGST Total Amount</span> 

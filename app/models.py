@@ -429,3 +429,46 @@ class MarketIteams(models.Model):
     product_img = models.ImageField(upload_to='marketproducts', null=True, blank=True)
     def __str__(self) -> str:
         return self.name
+    
+
+class AminitiesInvoice(models.Model):
+    vendor = models.ForeignKey(User,on_delete=models.CASCADE)
+    customername = models.CharField(max_length=50)
+    customercontact = models.BigIntegerField(validators=[MaxValueValidator(9999999999)])
+    customeremail = models.EmailField(max_length=100,blank=True)
+    customeraddress = models.CharField(max_length=300)
+    customergst = models.CharField(max_length=15,blank=True)
+    customercompany = models.CharField(max_length=50,blank=True)
+    invoicenumber = models.CharField(max_length=12)
+    invoicedate = models.DateField(auto_now=False,null=True)
+    CATEGORY_CHOICES = [
+        ('GST', 'GST'),
+        ('IGST', 'IGST'),
+        # Add more categories as needed
+    ]
+    taxtype = models.CharField(max_length=5, choices=CATEGORY_CHOICES)
+    total_item_amount = models.DecimalField(max_digits=10, decimal_places=2,blank=True)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2,blank=True)
+    subtotal_amount = models.DecimalField(max_digits=10, decimal_places=2,blank=True)
+    gst_amount = models.DecimalField(max_digits=10, decimal_places=2,blank=True)
+    sgst_amount = models.DecimalField(max_digits=10, decimal_places=2,blank=True)
+    grand_total_amount = models.DecimalField(max_digits=10, decimal_places=2,blank=True)
+    modeofpayment = models.CharField(max_length=20,blank=True)
+    cash_amount = models.DecimalField(max_digits=10, decimal_places=2,blank=True)
+    online_amount = models.DecimalField(max_digits=10, decimal_places=2,blank=True)
+    sattle =  models.BooleanField(default=False)
+
+
+class AminitiesInvoiceItem(models.Model):
+    vendor = models.ForeignKey(User,on_delete=models.CASCADE)
+    invoice = models.ForeignKey(AminitiesInvoice, on_delete=models.CASCADE)
+    description = models.CharField(max_length=100)
+    quantity = models.PositiveIntegerField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    tax_rate = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(0)],blank=True)
+    hsncode = models.CharField(max_length=8,blank=True)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2,blank=True)
+    subtotal_amt = models.DecimalField(max_digits=10, decimal_places=2)
+    tax_amt = models.DecimalField(max_digits=10, decimal_places=2,blank=True)
+    grand_total = models.DecimalField(max_digits=10, decimal_places=2)
