@@ -713,6 +713,32 @@
 
               </div>
             </form>
+
+
+            <span class="text fw-bold mt-5 m-4">Discount Finder</span>
+          <div class="col-sm-4 ms-4 mb-3">
+            <label class="col-sm-12  col-form-label" for="basic-icon-default-fullname">Excepted Amount₹</label>
+            <div class="input-group">
+                
+                <input
+                  type="number"
+                  name = "reaminingamount"
+                  class="form-control"
+                  value=0
+                  id="excaptedamountinput"
+                  placeholder="Reamaining amount"
+                  aria-label="Recipient's username"
+                  aria-describedby="button-addon2"
+                  {% comment %} onClick="calculateamount()" {% endcomment %}
+                />
+                <button type="button" class="btn btn-primary" onclick="adddayscalculationfinder()">=</button>
+              </div>
+          </div>
+          
+          <div class="col-sm-4 ">
+            <label class="col-sm-12 col-form-label" for="basic-icon-default-fullname">Avg Discount ₹</label>
+            <span id="showamts"></span>
+          </div>
               
             </div>{%endfor%}
 
@@ -789,6 +815,77 @@
                 document.getElementById('subtotal').value = subtotal;
                 document.getElementById('totalamounttext').innerHTML = total;
               }
+
+
+
+              //discount Finder
+              function adddayscalculationfinder() {
+                // Get date values
+                var startDateStr = $("#checkindate").val();
+                var endDateStr = $("#checkoutdate").val();
+                
+                // Convert the input values to Date objects
+                var startDate = new Date(startDateStr);
+                var endDate = new Date(endDateStr);
+                
+                // Calculate the difference in milliseconds
+                var timeDiff = endDate.getTime() - startDate.getTime();
+                
+                // Convert milliseconds to days
+                var daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
+                if (daysDiff === 0) {
+                    daysDiff = 1; // Minimum of 1 day
+                }
+            
+                
+            
+                // Get subtotal and room pricing information
+                var subtotalamountbyinput = parseFloat(document.getElementById('subtotalinput').value);
+                var roomprice = parseFloat($("#roomprice").val());
+                var roomtax = parseFloat($("#roomtax").val());
+                
+                // Calculate subtotal amount
+                var subtotalamount = subtotalamountbyinput * daysDiff;
+                
+                // Calculate tax amount
+                var taxamount = (roomprice * roomtax) / 100;
+                
+                // Calculate total amount including tax
+                var totalamount_before_tax = (roomprice + taxamount) * daysDiff;
+                
+                // Get the expected amount from input
+                var excpatedamt = parseFloat($('#excaptedamountinput').val());
+            
+                // Function to calculate total including tax for a given pre-tax amount
+                function calculateTotalIncludingTax(amountBeforeTax) {
+                    var totalTax = (amountBeforeTax * roomtax / 100);
+                    return amountBeforeTax + totalTax;
+                }
+            
+                // Find the discount needed to match the expected amount
+                var discount_needed = 0;
+                var low = 0;
+                var high = subtotalamount;
+                var tolerance = 0.01; // Tolerance level for precision
+            
+                while (high - low > tolerance) {
+                    var mid = (low + high) / 2;
+                    var total_after_discount = calculateTotalIncludingTax(subtotalamount - mid);
+                    
+                    if (total_after_discount > excpatedamt) {
+                        low = mid;
+                    } else {
+                        high = mid;
+                    }
+                }
+            
+                discount_needed = (subtotalamount - high).toFixed(2);
+            
+                // Update the UI with results
+                
+                $("#showamts").text((subtotalamount - discount_needed).toFixed(2));
+                
+            }
             </script>
             <!--js of discount button end-->
             

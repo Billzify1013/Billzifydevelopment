@@ -233,8 +233,30 @@
                   </a>
                 </li>
 
-                
+                <li class="menu-header small text-uppercase">
+                  <span class="menu-header-text">Amenities Management</span>
+                </li>
 
+                <li class="menu-item text-uppercase {% if active_page == 'aminityinvoice' %}active{% endif %} ">
+                  <a href="{% url 'aminityinvoice'  %}" class="menu-link">
+                    <i class='menu-icon bx bx-laptop'></i>
+                    <div data-i18n="Analytics">Amenities Invoicing</div>
+                  </a>
+                </li>
+
+                <li class="menu-item text-uppercase {% if active_page == 'aminityhistory' %}active{% endif %} ">
+                  <a href="{% url 'aminityhistory'  %}" class="menu-link">
+                    <i class='menu-icon bx mb-1 bx-timer'></i>
+                    <div data-i18n="Analytics">Amenities History</div>
+                  </a>
+                </li>
+
+                <li class="menu-item text-uppercase {% if active_page == 'aminitysales' %}active{% endif %} ">
+                  <a href="{% url 'aminitysales'  %}" class="menu-link">
+                    <i class='menu-icon bx bx-analyse'></i>
+                    <div data-i18n="Analytics">Amenities Sales</div>
+                  </a>
+                </li>
               
 
                 

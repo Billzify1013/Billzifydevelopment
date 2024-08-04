@@ -78,6 +78,20 @@ urlpatterns = [
     path('userdatacheckbychandanbillsteam/',employeemanage.userdatacheckbychandanbillsteam,name="userdatacheckbychandanbillsteam"),
     path('searchuserdata/',employeemanage.searchuserdata,name="searchuserdata"),
 
+    # aminityinvoice codes
+    path('aminityinvoice/',loyltys.aminityinvoice,name="aminityinvoice"),
+    path('addaminitiesinvoice/',loyltys.addaminitiesinvoice,name="addaminitiesinvoice"),
+    path('addmoreaminitiesproductininvoice/',loyltys.addmoreaminitiesproductininvoice,name="addmoreaminitiesproductininvoice"),
+    path('aminitiesitemdelete/<int:id>/',loyltys.aminitiesitemdelete,name="aminitiesitemdelete"),
+    path('saveaminitiesinvoice/',loyltys.saveaminitiesinvoice,name="saveaminitiesinvoice"),
+    path('aminityhistory/',loyltys.aminityhistory,name="aminityhistory"),
+    path('deleteaminitesinvc/<int:id>/',loyltys.deleteaminitesinvc,name="deleteaminitesinvc"),
+    path('aminitiesinvoice/<int:id>/',loyltys.aminitiesinvoice,name="aminitiesinvoice"),
+    path('searchaminitiesdata/',loyltys.searchaminitiesdata,name="searchaminitiesdata"),
+    path('aminitysales/',loyltys.aminitysales,name="aminitysales"),
+    path('searchaminitiesinvoicedata/',loyltys.searchaminitiesinvoicedata,name="searchaminitiesinvoicedata"),
+    path('generate_aminitiesinvoice_excel/',donwloadexcel.generate_aminitiesinvoice_excel,name="generate_aminitiesinvoice_excel"),
+
     # ajax data
     path('getloyltydataajax',loyltys.getloyltydataajax,name="getloyltydataajax"),
     path('deleteloyltyajaxdata',loyltys.deleteloyltyajaxdata,name="deleteloyltyajaxdata"),
