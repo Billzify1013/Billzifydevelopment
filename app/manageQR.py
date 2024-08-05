@@ -277,7 +277,8 @@ def Showqr(request, id):
         font_size = 30
         font = ImageFont.truetype("arial.ttf", font_size)  # Load Arial font with larger size
         
-        text_width, text_height = draw.textsize(text, font=font)
+        text_bbox = draw.textbbox((0, 0), text, font=font)
+        text_width, text_height = text_bbox[2] - text_bbox[0], text_bbox[3] - text_bbox[1]
         qr_width, qr_height = qr_image.size
         text_position = ((qr_width - text_width) // 2, qr_height - text_height - 20)  # Positioning text at the bottom with larger margin
 
