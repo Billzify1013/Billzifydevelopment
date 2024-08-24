@@ -536,11 +536,34 @@
               </div>
             </div>
           </div>
-          <div class="col-md-8 col-lg-2 order-1 mb-4"></div>
-          <div class="col-md-4 col-lg-6 order-1 mb-4">
-            
-          <img src="{% static 'undercss/assets/img/avatars/salsead.png'%}" id="lgimg" alt height="420" class="float-start" />
-                </div></div>
+          <div class="col-md-8 col-lg-4 order-1 mb-4">
+            <div class="card">
+
+              
+  <form action="{% url 'finddatevisesales'%}" method="post">
+    {% csrf_token %}   
+  <div class="">
+  <div class="row card-body">
+    <h5>Search According to Sales Date</h5>
+    <div class="col-12" > 
+      <labal>Start Date</label>
+      <input  type="date" name="startdate" placeholder="select CheckIn Date" class="form-control "   required id="dateInput"/>
+    </div>
+
+    <div class="col-12 mt-3" >
+      <labal>End Date</label>
+    <input type="date" name="enddate" placeholder="select CheckOut Date" id="dateInputs" class=" form-control"  required/>
+  </div>
+  <div class="col-12 mt-4" >
+    <input type="submit" class="btn mb-1 w-100 btn-primary "/>
+  </div>
+ 
+  </div></div>
+     </form>
+            </div>
+          </div>
+
+          </div>
     
 
       

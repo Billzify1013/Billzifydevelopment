@@ -441,3 +441,15 @@ def addfoodurlbyqr(request):
             return redirect('loginpage')
     except Exception as e:
         return render(request, '404.html', {'error_message': str(e)}, status=500)
+
+
+def deleteroomoffersweb(request,id):
+    try:
+        if request.user.is_authenticated:
+            user=request.user
+            offerwebsitevendor.objects.filter(vendor=user,id=id).delete()
+            return redirect('websetting')
+        else:
+            return redirect('loginpage')
+    except Exception as e:
+        return render(request, '404.html', {'error_message': str(e)}, status=500)

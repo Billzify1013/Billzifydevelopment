@@ -966,5 +966,22 @@ def searchaminitiesinvoicedata(request):
 
 
 
+def searchguestexportdta(request):
+    try:
+        if request.user.is_authenticated and request.method == "POST":
+            user = request.user
+            
+            # Retrieve POST data with default empty string or '0'
+            startdate = request.POST.get('startdate', '')
+            enddate = request.POST.get('enddate', '')
+            if startdate == enddate :
+                guestdata = Gueststay.objects.filter(vendor=user,checkindate__date=startdate).order_by('checkindate')
+            else:
+                guestdata = Gueststay.objects.filter(vendor=user,checkindate__range=[startdate,enddate]).order_by('checkindate')
+            print(guestdata)
+            return render(request,'guestshowexport.html',{'guestdata':guestdata,'startdate':startdate,'enddate':enddate})
 
-
+        else:
+            return redirect('loginpage')   
+    except Exception as e:
+            return render(request, '404.html', {'error_message': str(e)}, status=500)     

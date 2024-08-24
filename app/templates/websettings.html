@@ -346,7 +346,7 @@
                             maxlength="60"
                             id="nameBackdrop"
                             class="form-control"
-                            placeholder="Like 10 ,20, 25!"
+                            placeholder="Like WELCOME,FIRST"
                             required
                           />
                         </div>
@@ -365,7 +365,7 @@
                           </div>
 
                           <div class="col-6 mb-6">
-                            <label for="nameBackdrop" class="form-label">Happy Guest Count</label>
+                            <label for="nameBackdrop" class="form-label">Select Room Category</label>
                             <select class="form-control" name="category" placeholder="Select Category">
                                 {%for cat in category%}
                                 <option  value="{{cat.id}}">{{cat}}</option>
@@ -386,6 +386,7 @@
                         <th>Selected Category</th>
                         <th>Voucher Code</th>
                         <th>Voucher Amount</th>
+                        <th>Action</th>
                       </tr>
                     </thead> 
                     <tbody class="table-border-bottom-0">
@@ -395,7 +396,9 @@
                         <td><i class="fab fa-angular fa-lg text-danger "></i> <strong>{{data.category}}</strong></td>
                         <td><i class="fab fa-angular fa-lg text-danger "></i> <strong>{{data.code}}</strong></td>
                         <td><i class="fab fa-angular fa-lg text-danger "></i> <strong>{{data.amount}}</strong></td>
-                    
+                        <td>
+                          <a href="{% url 'deleteroomoffersweb' id=data.id %}"><span class="badge bg-label-danger  "><i class='bx bxs-trash'></i></span></a>
+                      </td>
                         
                       </tr>
                       {%endfor%}

@@ -153,6 +153,20 @@ def index(request):
     except Exception as e:
         return render(request, '404.html', {'error_message': str(e)}, status=500)
     
+def guestregform(request,id):
+    try:
+        if request.user.is_authenticated:
+            user = request.user
+            if Gueststay.objects.filter(vendor=user,id=id).exists():
+                guestdata = Gueststay.objects.filter(vendor=user,id=id)
+                hoteldata = HotelProfile.objects.filter(vendor=user)
+                return render(request,"guestregform.html",{'guestdata':guestdata,'hoteldata':hoteldata})
+            else:
+                return render(request,"homepage.html")
+        else:
+            return render(request, 'login.html')
+    except Exception as e:
+        return render(request, '404.html', {'error_message': str(e)}, status=500)
 
 
 def myprofile(request):
@@ -253,15 +267,29 @@ def invoicepage(request, id):
             invoice_data = Invoice.objects.filter(vendor=user, customer=userid)
             invoiceitemdata = InvoiceItem.objects.filter(vendor=user, invoice=itemid)
             loyltydata = loylty_data.objects.filter(vendor=user, Is_active=True)
-
+            
             if status is False:
+                for datas in invoice_data:
+                    cashamt = datas.cash_amount
+                    onlineamt = datas.online_amount
+                    grandamt = datas.grand_total_amount
+                print(cashamt,onlineamt,grandamt)
+                remainamt =  True
+                remainamtinrs = 0
+                testamt=cashamt + onlineamt
+                if testamt == grandamt:
+                    remainamt = False
+                remainamtinrs = grandamt - testamt
+                print(testamt)
                 return render(request, 'foliobill.html', {
                     'active_page': 'foliobillingpage',
                     'profiledata': profiledata,
                     'guestdata': guestdata,
                     'invoice_data': invoice_data,
                     'invoiceitemdata': invoiceitemdata,
-                    'loyltydata': loyltydata
+                    'loyltydata': loyltydata,
+                    'remainamt':remainamt,
+                    'remainamtinrs':remainamtinrs
                 })
             else:
                 return render(request, 'invoicepage.html', {
@@ -274,6 +302,32 @@ def invoicepage(request, id):
             return render(request, 'login.html')
     except Exception as e:
         return render(request, '404.html', {'error_message': str(e)}, status=500)
+
+from django.urls import reverse
+def editcustomergstnumber(request):
+    try:
+        if request.user.is_authenticated and request.method == "POST":
+            user = request.user
+            invcid = request.POST.get('invcid')
+            gstnumber = request.POST.get('gstnumber')
+            customerphone = request.POST.get('customerphone')
+            if Invoice.objects.filter(vendor=user,customer_id=invcid).exists():
+                Invoice.objects.filter(vendor=user,customer_id=invcid).update(customer_gst_number=gstnumber)
+                Gueststay.objects.filter(vendor=user,id=invcid).update(guestphome=customerphone)
+                
+
+            else:
+                pass
+
+            url = reverse('invoicepage', args=[invcid])
+
+        
+            return redirect(url)
+        else:
+            return redirect('loginpage')
+    except Exception as e:
+        return render(request, '404.html', {'error_message': str(e)}, status=500)
+
 
 
 def rooms(request):
@@ -298,6 +352,81 @@ def rooms(request):
 
 
 
+# def homepage(request):
+#     try:
+#         if request.user.is_authenticated:
+#             user = request.user
+#             showtimeb = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+
+#             # Filter data
+#             category = RoomsCategory.objects.filter(vendor=user).order_by('id')
+#             rooms = Rooms.objects.filter(vendor=user).order_by('id')
+#             desired_date = datetime.now().date()
+
+#             # Update checkout status for guests
+#             Gueststay.objects.filter(Q(vendor=user, checkoutdate__date__lte=desired_date) | Q(vendor=user, checkoutdate__date=desired_date)).update(checkoutstatus=True)
+
+#             # Query sets
+#             dats = Gueststay.objects.filter(vendor=user, checkoutdate__date__lte=desired_date, checkoutstatus=True, checkoutdone=False)
+#             datsin = Gueststay.objects.filter(vendor=user, checkindate__date=desired_date)
+#             tax = Taxes.objects.filter(vendor=user).all()
+#             arriwaldata = RoomBookAdvance.objects.filter(
+#                   # Include the vendor condition
+#                 Q(vendor=user,bookingdate=desired_date,checkinstatus=False) | 
+#                 Q(vendor=user,bookingdate__lte=desired_date, checkoutdate__gt=desired_date,checkinstatus=False)
+#             )
+#             bookedmisseddata = RoomBookAdvance.objects.filter(vendor=user, checkoutdate__lte=desired_date, checkinstatus=False)
+#             saveguestallroomcheckout = RoomBookAdvance.objects.filter(vendor=user, checkoutdate=desired_date, checkinstatus=True)
+            
+#             # Update rooms based on filtered data
+#             for i in saveguestallroomcheckout:
+#                 Rooms.objects.filter(vendor=user, room_name=i.roomno.room_name).exclude(checkin=6).update(checkin=2)
+#             print(saveguestallroomcheckout)
+#             for i in dats:
+#                 Rooms.objects.filter(vendor=user, room_name=i.roomno).exclude(checkin=6).update(checkin=2)
+
+#             for i in bookedmisseddata:
+#                 if i.roomno.checkin == 5 or i.roomno.checkin == 4:
+#                     Rooms.objects.filter(vendor=user, id=i.roomno.id).update(checkin=0)
+
+#             for data in arriwaldata:
+#                 if data.roomno.checkin not in [1, 2, 5]:
+#                     Rooms.objects.filter(vendor=user, id=data.roomno.id).update(checkin=4)
+
+#             # Additional queries
+#             checkintimedata = HotelProfile.objects.filter(vendor=user)
+#             stayover = Rooms.objects.filter(vendor=user, checkin=1).count()
+#             availablerooms = Rooms.objects.filter(vendor=user, checkin=0).count()
+#             totalrooms = Rooms.objects.filter(vendor=user).count()
+#             checkoutcount = Gueststay.objects.filter(vendor=user, checkoutdate__date=desired_date, checkoutstatus=True, checkoutdone=False).count()
+#             checkincountdays = len(datsin)
+
+#             # Create rooms dictionary
+#             roomsdict = {}
+#             for cat in category:
+#                 roomsdict[cat.category_name] = [[room.room_name, room.checkin] for room in rooms.filter(room_type=cat)]
+
+#             return render(request, 'homepage.html', {
+#                 'active_page': 'homepage',
+#                 'category': category,
+#                 'rooms': rooms,
+#                 'roomsdict': roomsdict,
+#                 'tax': tax,
+#                 'checkintimedata': checkintimedata,
+#                 'stayover': stayover,
+#                 'availablerooms': availablerooms,
+#                 'checkincount': checkincountdays,
+#                 'checkoutcount': checkoutcount,
+#                 'arriwalcount': len(arriwaldata)
+#             })
+#         else:
+#             return redirect('loginpage')
+#     except Exception as e:
+#         return render(request, '404.html', {'error_message': str(e)}, status=500)
+    
+# update by me code
+
+
 def homepage(request):
     try:
         if request.user.is_authenticated:
@@ -310,19 +439,32 @@ def homepage(request):
             desired_date = datetime.now().date()
 
             # Update checkout status for guests
-            Gueststay.objects.filter(Q(vendor=user, checkoutdate__date__lte=desired_date) & Q(vendor=user, checkoutdate__date=desired_date)).update(checkoutstatus=True)
+            Gueststay.objects.filter(Q(vendor=user, checkoutdate__date__lte=desired_date) | Q(vendor=user, checkoutdate__date=desired_date)).update(checkoutstatus=True)
 
             # Query sets
             dats = Gueststay.objects.filter(vendor=user, checkoutdate__date__lte=desired_date, checkoutstatus=True, checkoutdone=False)
             datsin = Gueststay.objects.filter(vendor=user, checkindate__date=desired_date)
             tax = Taxes.objects.filter(vendor=user).all()
-            arriwaldata = RoomBookAdvance.objects.filter(vendor=user, bookingdate=desired_date, checkinstatus=False).all()
+            arriwaldata = RoomBookAdvance.objects.filter(
+                  # Include the vendor condition
+                Q(vendor=user,bookingdate=desired_date,checkinstatus=False) | 
+                Q(vendor=user,bookingdate__lte=desired_date, checkoutdate__gt=desired_date,checkinstatus=False)
+            )
             bookedmisseddata = RoomBookAdvance.objects.filter(vendor=user, checkoutdate__lte=desired_date, checkinstatus=False)
-            saveguestallroomcheckout = RoomBookAdvance.objects.filter(vendor=user, checkoutdate=desired_date, checkinstatus=True).all()
-
+            saveguestallroomcheckout = RoomBookAdvance.objects.filter(vendor=user, checkoutdate=desired_date, checkinstatus=True)
+            
             # Update rooms based on filtered data
             for i in saveguestallroomcheckout:
-                Rooms.objects.filter(vendor=user, room_name=i.roomno.room_name).exclude(checkin=6).update(checkin=2)
+                roomnumber = i.roomno.room_name
+                invcdata = InvoiceItem.objects.filter(vendor=user,description=roomnumber).last()
+                if invcdata:
+                    if Invoice.objects.filter(vendor=user,id=invcdata.invoice.id,foliostatus=False,customer__checkoutdate=desired_date):
+                        Rooms.objects.filter(vendor=user, room_name=i.roomno.room_name).exclude(checkin=6).update(checkin=2)
+                    else:
+                        # Rooms.objects.filter(vendor=user, room_name=i.roomno.room_name).exclude(checkin=6).update(checkin=0)
+                        pass
+                else:
+                    pass
 
             for i in dats:
                 Rooms.objects.filter(vendor=user, room_name=i.roomno).exclude(checkin=6).update(checkin=2)
@@ -668,74 +810,78 @@ def addguestdata(request):
             current_date = datetime.now()
             userstatedata = HotelProfile.objects.get(vendor=user)
             userstate = userstatedata.zipcode
-            if userstate == state:
-                taxtypes = "GST"
-            else:
-                taxtypes = "IGST"
-            guestdata = Gueststay.objects.create(vendor=user,guestname=guestname,guestphome=guestphome,guestemail=guestemail,guestcity=guestcity,guestcountry=guestcountry,guestidimg=guestidimg,
-                                    checkindate=current_date,checkoutdate=checkoutdate ,noofguest=noofguest,adults=adults,children=children
-                                    ,purposeofvisit=purposeofvisit,roomno=roomno,tax=tax,discount=discount,subtotal=subtotal,total=total,noofrooms=1)
-            gsid=guestdata.id
-            if checkmoredatastatus == 'on':
-                moreguestname = request.POST.get('moreguestname')
-                moreguestphone = request.POST.get('moreguestphone',0)
-                moreguestaddress = request.POST.get('moreguestaddress')
-                if moreguestphone == "":
-                    moreguestphone = 0
+            if Rooms.objects.filter(vendor=user,room_name=roomno,checkin=0).exists():
+                Rooms.objects.filter(vendor=user,room_name=roomno).update(checkin=1)
+                if userstate == state:
+                    taxtypes = "GST"
                 else:
-                    pass
-                MoreGuestData.objects.create(vendor=user,mainguest=guestdata,another_guest_name=moreguestname,
-                                            another_guest_phone=moreguestphone,another_guest_address=moreguestaddress)
-                print("createsuccessfull chandan")
-            roomdata = Rooms.objects.filter(vendor=user,room_name=roomno).all()
-            for i in roomdata:
-                roomprice = i.price
-                tax_rate = i.tax.taxrate
-                roomname = i.room_name
-                tax_amount = i.tax_amount
-                roomtype = i.room_type.id
-                room_details = i.room_type.category_name
-            divideamt = tax_amount / 2
-            tax_rate = tax_rate / 2
-            totalitemamount = roomprice * staydays
-            subtotalamount = totalitemamount - discount
-            gstamount = (subtotalamount * tax_rate) /100
-            sgstamount = (subtotalamount * tax_rate) /100
-            grandtotal_amount = subtotalamount + gstamount + sgstamount
-            cat = RoomsCategory.objects.get(vendor=user,id=roomtype)
-            hsnno = cat.Hsn_sac
-            print(room_details)
-            room_details = roomname
-            print(hsnno)
-            #  for invoice number
-            current_date = datetime.now().date()
-            invoice_number = ""
-            cashamount = 0.00
-            onlineamount = 0.00
-            if paidstatus == "Paid":
-                statuspaid = True
-                if paymentstatus == "cash":
-                    cashamount = grandtotal_amount
-                elif paymentstatus == "online":
-                    onlineamount = grandtotal_amount
+                    taxtypes = "IGST"
+                guestdata = Gueststay.objects.create(vendor=user,guestname=guestname,guestphome=guestphome,guestemail=guestemail,guestcity=guestcity,guestcountry=guestcountry,guestidimg=guestidimg,
+                                        checkindate=current_date,checkoutdate=checkoutdate ,noofguest=noofguest,adults=adults,children=children
+                                        ,purposeofvisit=purposeofvisit,roomno=roomno,tax=tax,discount=discount,subtotal=subtotal,total=total,noofrooms=1)
+                gsid=guestdata.id
+                if checkmoredatastatus == 'on':
+                    moreguestname = request.POST.get('moreguestname')
+                    moreguestphone = request.POST.get('moreguestphone',0)
+                    moreguestaddress = request.POST.get('moreguestaddress')
+                    if moreguestphone == "":
+                        moreguestphone = 0
+                    else:
+                        pass
+                    MoreGuestData.objects.create(vendor=user,mainguest=guestdata,another_guest_name=moreguestname,
+                                                another_guest_phone=moreguestphone,another_guest_address=moreguestaddress)
+                    print("createsuccessfull chandan")
+                roomdata = Rooms.objects.filter(vendor=user,room_name=roomno).all()
+                for i in roomdata:
+                    roomprice = i.price
+                    tax_rate = i.tax.taxrate
+                    roomname = i.room_name
+                    tax_amount = i.tax_amount
+                    roomtype = i.room_type.id
+                    room_details = i.room_type.category_name
+                divideamt = tax_amount / 2
+                tax_rate = tax_rate / 2
+                totalitemamount = roomprice * staydays
+                subtotalamount = totalitemamount - discount
+                gstamount = (subtotalamount * tax_rate) /100
+                sgstamount = (subtotalamount * tax_rate) /100
+                grandtotal_amount = subtotalamount + gstamount + sgstamount
+                cat = RoomsCategory.objects.get(vendor=user,id=roomtype)
+                hsnno = cat.Hsn_sac
+                print(room_details)
+                room_details = roomname
+                print(hsnno)
+                #  for invoice number
+                current_date = datetime.now().date()
+                invoice_number = ""
+                cashamount = 0.00
+                onlineamount = 0.00
+                if paidstatus == "Paid":
+                    statuspaid = True
+                    if paymentstatus == "cash":
+                        cashamount = grandtotal_amount
+                    elif paymentstatus == "online":
+                        onlineamount = grandtotal_amount
+                    else:
+                        cashamount = float(request.POST.get('cashamount'))
+                        onlineamount = float(request.POST.get('onlineamount'))
                 else:
-                    cashamount = float(request.POST.get('cashamount'))
-                    onlineamount = float(request.POST.get('onlineamount'))
-            else:
-                statuspaid = False
-            Invoiceid = Invoice.objects.create(vendor=user,customer=guestdata,customer_gst_number="",
-                                                invoice_number=invoice_number,invoice_date=checkindate,total_item_amount=totalitemamount,discount_amount=discount,
-                                                subtotal_amount=subtotalamount,gst_amount=gstamount,sgst_amount=sgstamount,
-                                                grand_total_amount=grandtotal_amount,modeofpayment=paymentstatus,room_no=roomname,
-                                                taxtype=taxtypes,online_amount=onlineamount ,cash_amount=cashamount,)
-            
-            invoiceitem = InvoiceItem.objects.create(vendor=user,invoice=Invoiceid,description=room_details,quantity_likedays=staydays,
-                                    paidstatus=statuspaid,price=roomprice,cgst_rate=tax_rate,sgst_rate=tax_rate,hsncode=hsnno,total_amount=grandtotal_amount)  
-            Rooms.objects.filter(vendor=user,room_name=roomno).update(checkin=1)
+                    statuspaid = False
+                Invoiceid = Invoice.objects.create(vendor=user,customer=guestdata,customer_gst_number="",
+                                                    invoice_number=invoice_number,invoice_date=checkindate,total_item_amount=totalitemamount,discount_amount=discount,
+                                                    subtotal_amount=subtotalamount,gst_amount=gstamount,sgst_amount=sgstamount,
+                                                    grand_total_amount=grandtotal_amount,modeofpayment=paymentstatus,room_no=roomname,
+                                                    taxtype=taxtypes,online_amount=onlineamount ,cash_amount=cashamount,)
+                
+                invoiceitem = InvoiceItem.objects.create(vendor=user,invoice=Invoiceid,description=room_details,quantity_likedays=staydays,
+                                        paidstatus=statuspaid,price=roomprice,cgst_rate=tax_rate,sgst_rate=tax_rate,hsncode=hsnno,total_amount=grandtotal_amount)  
+                Rooms.objects.filter(vendor=user,room_name=roomno).update(checkin=1)
 
-        
             
-            return redirect('foliobillingpage')
+                
+                return redirect('foliobillingpage')
+            else:
+                return redirect('foliobillingpage')
         else:
             return redirect('loginpage') 
     except Exception as e:
@@ -804,7 +950,7 @@ def addguestdatafromadvanceroombook(request):
                     print(len(totalrooms))
                     updatediscountamount = int(discount)
                     if len(totalrooms)>1:
-                        updatediscountamount = int(discount) // int(len(totalrooms))
+                        updatediscountamount = int(discount) / int(len(totalrooms))
                     print(updatediscountamount)
                     staydays = saveguestdata.staydays
                     Invtotal_amount = 0.0
@@ -818,7 +964,7 @@ def addguestdatafromadvanceroombook(request):
                         rid = i.roomno.id
                         roomdata = Rooms.objects.get(vendor=user,id=rid)
                         
-                        roomprice = roomdata.price * int(staydays)
+                        roomprice = int(roomdata.price) * int(staydays)
                         roomprice = roomprice - updatediscountamount
             
                         taxrate = roomdata.tax.taxrate
@@ -896,7 +1042,7 @@ def addguestdatafromadvanceroombook(request):
             return redirect('loginpage')
     except Exception as e:
         return render(request, '404.html', {'error_message': str(e)}, status=500)
-    
+   
 
 # checkout button function
 from django.db.models import Max
@@ -910,145 +1056,145 @@ def checkoutroom(request):
             paymentstatus = request.POST.get('paymentstatus')
             gstnumbercustomer = request.POST.get('gstnumber')
             
-            if gstnumbercustomer:
-                Invoice.objects.filter(vendor=user,id=invoice_id).update(customer_gst_number=gstnumbercustomer)
-            else:
-                pass
-            if Invoice.objects.filter(vendor=user,id=invoice_id).exists():
-                GUESTIDs = Invoice.objects.get(vendor=user,id=invoice_id)
-                GUESTID = GUESTIDs.customer.id
-                invoicegrandtotalpaymentstatus = GUESTIDs.grand_total_amount
-                if paymentstatus == "Partly":
-                    cashamount = request.POST.get('cashamount')
-                    onlineamount = request.POST.get('onlineamount')
-                    if float(cashamount) + float(onlineamount) == invoicegrandtotalpaymentstatus:
-                          Invoice.objects.filter(vendor=user,id=invoice_id).update(cash_amount=cashamount,online_amount=onlineamount,invoice_status=True)
-                    else:
-                          Invoice.objects.filter(vendor=user,id=invoice_id).update(cash_amount=invoicegrandtotalpaymentstatus,invoice_status=True)          
-                elif paymentstatus == "cash":
-                    Invoice.objects.filter(vendor=user,id=invoice_id).update(cash_amount=invoicegrandtotalpaymentstatus,online_amount=0.00,invoice_status=True)
-                elif paymentstatus =="unpaid":
-                    duedate = request.POST.get('duedate')
-                    Invoice.objects.filter(vendor=user,id=invoice_id).update(online_amount=invoicegrandtotalpaymentstatus,invoice_status=False,invoice_number="unpaid")
-                    CustomerCredit.objects.create(vendor=user,customer_name=GUESTIDs.customer.guestname,amount=invoicegrandtotalpaymentstatus,due_date=duedate,invoice=GUESTIDs,phone=GUESTIDs.customer.guestphome)
-                else:
-                    Invoice.objects.filter(vendor=user,id=invoice_id).update(cash_amount=0.00,online_amount=invoicegrandtotalpaymentstatus,invoice_status=True)
-                guestdatas = Gueststay.objects.get(vendor=user,id=GUESTID)
-                current_date = datetime.now()
-                # Get the current date
-                invccurrentdate = datetime.now().date()
-
-                # Fetch the maximum invoice number for today for the given user
-                max_invoice_today = Invoice.objects.filter(
-                    vendor=user,
-                    invoice_date=invccurrentdate,
-                    foliostatus=True
-                ).aggregate(max_invoice_number=Max('invoice_number'))['max_invoice_number']
-
-                # Determine the next invoice number
-                if max_invoice_today is not None:
-                    # Extract the numeric part of the latest invoice number and increment it
-                    try:
-                        current_number = int(max_invoice_today.split('-')[-1])
-                        next_invoice_number = current_number + 1
-                    except (ValueError, IndexError):
-                        # Handle the case where the invoice number format is unexpected
-                        next_invoice_number = 1
-                else:
-                    next_invoice_number = 1
-
-                # Generate the invoice number
-                invoice_number = f'INV-{invccurrentdate}-{next_invoice_number}'
-                
-                # Check if the generated invoice number already exists
-                while Invoice.objects.filter(vendor=user,invoice_number=invoice_number).exists():
-                    next_invoice_number += 1
-                    invoice_number = f'INV-{invccurrentdate}-{next_invoice_number}'
-
-                
-                if RoomBookAdvance.objects.filter(vendor=user,roomno__room_name = roomno,bookingguestphone = guestdatas.guestphome,bookingdate__range = [guestdatas.checkindate , guestdatas.checkoutdate]).exists():
-                    saveguestid = RoomBookAdvance.objects.get(vendor=user,roomno__room_name = roomno,bookingguestphone = guestdatas.guestphome,bookingdate__range = [guestdatas.checkindate , guestdatas.checkoutdate])
-                    print(saveguestid.saveguestdata.id)
-                    multipleroomsdata = RoomBookAdvance.objects.filter(vendor=user,saveguestdata_id=saveguestid.saveguestdata.id).all()
-                    print(multipleroomsdata,"rooms data")
-                    for i in multipleroomsdata:
-                        print(i.roomno.id)
-                        Rooms.objects.filter(vendor=user,id=i.roomno.id).update(checkin=0)
-                    Invoice.objects.filter(vendor=user,id=invoice_id).update(foliostatus=True,invoice_number=invoice_number,modeofpayment=paymentstatus)
-                    SaveAdvanceBookGuestData.objects.filter(id=saveguestid.saveguestdata.id).delete()
-                    Gueststay.objects.filter(vendor=user,id=GUESTID).update(checkoutdone=True,checkoutstatus=True,checkoutdate=current_date)
-                elif HourlyRoomsdata.objects.filter(vendor=user,rooms__room_name=guestdatas.roomno).exists():
-                    HourlyRoomsdata.objects.filter(vendor=user,rooms__room_name=guestdatas.roomno).update(checkinstatus=False)
-                    Invoice.objects.filter(vendor=user,id=invoice_id).update(foliostatus=True,invoice_number=invoice_number,modeofpayment=paymentstatus)
-                    Gueststay.objects.filter(vendor=user,id=GUESTID).update(checkoutdone=True,checkoutstatus=True,checkoutdate=current_date)
-            
-                else:
-                    Gueststay.objects.filter(vendor=user,id=GUESTID).update(checkoutdone=True,checkoutstatus=True,checkoutdate=current_date)
-                    Invoice.objects.filter(vendor=user,id=invoice_id).update(foliostatus=True,invoice_number=invoice_number,modeofpayment=paymentstatus)
-                    Rooms.objects.filter(vendor=user,room_name=roomno).update(checkin=0)
-
-                if  paymentstatus =="unpaid":
-                        Invoice.objects.filter(vendor=user,id=invoice_id).update(invoice_number="unpaid")
+            if Invoice.objects.filter(vendor=user,id=invoice_id,foliostatus=False).exists():
+                if gstnumbercustomer:
+                    Invoice.objects.filter(vendor=user,id=invoice_id).update(customer_gst_number=gstnumbercustomer)
                 else:
                     pass
-            if loyltycheck == 'on':
-                    guestphone = Gueststay.objects.get(vendor=user,id=GUESTID)
-                    guestphonenumber = guestphone.guestphome
-                    guestnameformsg = guestphone.guestname
-                    loyltyrate = loylty_data.objects.get(vendor=user)
-                    totalamountinvoice = GUESTIDs.grand_total_amount
-                    totalloyltyamount = int(totalamountinvoice)*loyltyrate.loylty_rate_prsantage//100
-                    if loylty_Guests_Data.objects.filter(vendor=user,guest_contact=guestphonenumber).exists():
-                                loyltdatas = loylty_Guests_Data.objects.get(vendor=user,guest_contact=guestphonenumber)
-                                existsamount = loyltdatas.loylty_point + totalloyltyamount
-                                loylty_Guests_Data.objects.filter(vendor=user,guest_contact=guestphonenumber).update(loylty_point = existsamount)
+                if Invoice.objects.filter(vendor=user,id=invoice_id).exists():
+                    GUESTIDs = Invoice.objects.get(vendor=user,id=invoice_id)
+                    GUESTID = GUESTIDs.customer.id
+                    invoicegrandtotalpaymentstatus = GUESTIDs.grand_total_amount
+                    if paymentstatus == "Partly":
+                        cashamount = request.POST.get('cashamount')
+                        onlineamount = request.POST.get('onlineamount')
+                        Invoice.objects.filter(vendor=user,id=invoice_id).update(cash_amount=cashamount,online_amount=onlineamount,invoice_status=True)
+        
+                    elif paymentstatus == "cash":
+                        Invoice.objects.filter(vendor=user,id=invoice_id).update(cash_amount=invoicegrandtotalpaymentstatus,online_amount=0.00,invoice_status=True)
+                    elif paymentstatus =="unpaid":
+                        duedate = request.POST.get('duedate')
+                        Invoice.objects.filter(vendor=user,id=invoice_id).update(online_amount=invoicegrandtotalpaymentstatus,invoice_status=False,invoice_number="unpaid")
+                        CustomerCredit.objects.create(vendor=user,customer_name=GUESTIDs.customer.guestname,amount=invoicegrandtotalpaymentstatus,due_date=duedate,invoice=GUESTIDs,phone=GUESTIDs.customer.guestphome)
                     else:
-                                loylty_Guests_Data.objects.create(vendor=user,guest_name=guestnameformsg,guest_contact=guestphonenumber,loylty_point=totalloyltyamount)
-                    # msg content 
-                    usermsglimit = Messgesinfo.objects.get(vendor=user)
-                    if usermsglimit.defaultlimit > usermsglimit.changedlimit :
-                            addmsg = usermsglimit.changedlimit + 2
-                            Messgesinfo.objects.filter(vendor=user).update(changedlimit=addmsg)
-                            profilename = HotelProfile.objects.get(vendor=user)
-                            hotelname = profilename.name
-                            mobile_number = guestphonenumber
-                            user_name = "chandan"
-                            val = 5
-                            message_content = f"Dear Guest, you have earned loyalty points worth Rs {totalloyltyamount} at {hotelname}. We look forward to welcoming you back soon. - Billzify"
+                        Invoice.objects.filter(vendor=user,id=invoice_id).update(cash_amount=0.00,online_amount=invoicegrandtotalpaymentstatus,invoice_status=True)
+                    guestdatas = Gueststay.objects.get(vendor=user,id=GUESTID)
+                    current_date = datetime.now()
+                    # Get the current date
+                    invccurrentdate = datetime.now().date()
+
+                    # Fetch the maximum invoice number for today for the given user
+                    max_invoice_today = Invoice.objects.filter(
+                        vendor=user,
+                        invoice_date=invccurrentdate,
+                        foliostatus=True
+                    ).aggregate(max_invoice_number=Max('invoice_number'))['max_invoice_number']
+
+                    # Determine the next invoice number
+                    if max_invoice_today is not None:
+                        # Extract the numeric part of the latest invoice number and increment it
+                        try:
+                            current_number = int(max_invoice_today.split('-')[-1])
+                            next_invoice_number = current_number + 1
+                        except (ValueError, IndexError):
+                            # Handle the case where the invoice number format is unexpected
+                            next_invoice_number = 1
+                    else:
+                        next_invoice_number = 1
+                    # Generate the invoice number
+                    invoice_number = f'INV-{invccurrentdate}-{next_invoice_number}'
+                    
+                    # Check if the generated invoice number already exists
+                    while Invoice.objects.filter(vendor=user,invoice_number=invoice_number).exists():
+                        next_invoice_number += 1
+                        invoice_number = f'INV-{invccurrentdate}-{next_invoice_number}'
+
+                    Invoice.objects.filter(vendor=user,id=invoice_id).update(invoice_date=invccurrentdate)
+                    if RoomBookAdvance.objects.filter(vendor=user,roomno__room_name = roomno,bookingguestphone = guestdatas.guestphome,bookingdate__range = [guestdatas.checkindate , guestdatas.checkoutdate]).exists():
+                        saveguestid = RoomBookAdvance.objects.get(vendor=user,roomno__room_name = roomno,bookingguestphone = guestdatas.guestphome,bookingdate__range = [guestdatas.checkindate , guestdatas.checkoutdate])
+                        print(saveguestid.saveguestdata.id)
+                        multipleroomsdata = RoomBookAdvance.objects.filter(vendor=user,saveguestdata_id=saveguestid.saveguestdata.id).all()
+                        print(multipleroomsdata,"rooms data")
+                        for i in multipleroomsdata:
+                            print(i.roomno.id)
+                            Rooms.objects.filter(vendor=user,id=i.roomno.id).update(checkin=0)
+                        Invoice.objects.filter(vendor=user,id=invoice_id).update(foliostatus=True,invoice_number=invoice_number,modeofpayment=paymentstatus)
+                        SaveAdvanceBookGuestData.objects.filter(id=saveguestid.saveguestdata.id).delete()
+                        Gueststay.objects.filter(vendor=user,id=GUESTID).update(checkoutdone=True,checkoutstatus=True,checkoutdate=current_date)
+                    elif HourlyRoomsdata.objects.filter(vendor=user,rooms__room_name=guestdatas.roomno).exists():
+                        HourlyRoomsdata.objects.filter(vendor=user,rooms__room_name=guestdatas.roomno).update(checkinstatus=False)
+                        Invoice.objects.filter(vendor=user,id=invoice_id).update(foliostatus=True,invoice_number=invoice_number,modeofpayment=paymentstatus)
+                        Gueststay.objects.filter(vendor=user,id=GUESTID).update(checkoutdone=True,checkoutstatus=True,checkoutdate=current_date)
+                
+                    else:
+                        Gueststay.objects.filter(vendor=user,id=GUESTID).update(checkoutdone=True,checkoutstatus=True,checkoutdate=current_date)
+                        Invoice.objects.filter(vendor=user,id=invoice_id).update(foliostatus=True,invoice_number=invoice_number,modeofpayment=paymentstatus)
+                        Rooms.objects.filter(vendor=user,room_name=roomno).update(checkin=0)
+
+                    if  paymentstatus =="unpaid":
+                            Invoice.objects.filter(vendor=user,id=invoice_id).update(invoice_number="unpaid")
+                    else:
+                        pass
+                if loyltycheck == 'on':
+                        guestphone = Gueststay.objects.get(vendor=user,id=GUESTID)
+                        guestphonenumber = guestphone.guestphome
+                        guestnameformsg = guestphone.guestname
+                        loyltyrate = loylty_data.objects.get(vendor=user)
+                        totalamountinvoice = GUESTIDs.grand_total_amount
+                        totalloyltyamount = int(totalamountinvoice)*loyltyrate.loylty_rate_prsantage//100
+                        if loylty_Guests_Data.objects.filter(vendor=user,guest_contact=guestphonenumber).exists():
+                                    loyltdatas = loylty_Guests_Data.objects.get(vendor=user,guest_contact=guestphonenumber)
+                                    existsamount = loyltdatas.loylty_point + totalloyltyamount
+                                    loylty_Guests_Data.objects.filter(vendor=user,guest_contact=guestphonenumber).update(loylty_point = existsamount)
+                        else:
+                                    loylty_Guests_Data.objects.create(vendor=user,guest_name=guestnameformsg,guest_contact=guestphonenumber,loylty_point=totalloyltyamount)
+                        # msg content 
+                        usermsglimit = Messgesinfo.objects.get(vendor=user)
+                        if usermsglimit.defaultlimit > usermsglimit.changedlimit :
+                                addmsg = usermsglimit.changedlimit + 2
+                                Messgesinfo.objects.filter(vendor=user).update(changedlimit=addmsg)
+                                profilename = HotelProfile.objects.get(vendor=user)
+                                hotelname = profilename.name
+                                mobile_number = guestphonenumber
+                                user_name = "chandan"
+                                val = 5
+                                message_content = f"Dear Guest, you have earned loyalty points worth Rs {totalloyltyamount} at {hotelname}. We look forward to welcoming you back soon. - Billzify"
+                                    
+                                base_url = "http://control.yourbulksms.com/api/sendhttp.php"
+                                params = {
+                                    'authkey': settings.YOURBULKSMS_API_KEY,
+                                    'mobiles': guestphonenumber,
+                                    'sender':  'BILZFY',
+                                    'route': '2',
+                                    'country': '0',
+                                    'DLT_TE_ID': '1707171993560691064'
+                                }
+                                encoded_message = urllib.parse.urlencode({'message': message_content})
+                                url = f"{base_url}?authkey={params['authkey']}&mobiles={params['mobiles']}&sender={params['sender']}&route={params['route']}&country={params['country']}&DLT_TE_ID={params['DLT_TE_ID']}&{encoded_message}"
                                 
-                            base_url = "http://control.yourbulksms.com/api/sendhttp.php"
-                            params = {
-                                'authkey': settings.YOURBULKSMS_API_KEY,
-                                'mobiles': guestphonenumber,
-                                'sender':  'BILZFY',
-                                'route': '2',
-                                'country': '0',
-                                'DLT_TE_ID': '1707171993560691064'
-                            }
-                            encoded_message = urllib.parse.urlencode({'message': message_content})
-                            url = f"{base_url}?authkey={params['authkey']}&mobiles={params['mobiles']}&sender={params['sender']}&route={params['route']}&country={params['country']}&DLT_TE_ID={params['DLT_TE_ID']}&{encoded_message}"
-                            
-                            try:
-                                response = requests.get(url)
-                                if response.status_code == 200:
-                                    try:
-                                        response_data = response.json()
-                                        if response_data.get('Status') == 'success':
-                                            messages.success(request, 'SMS sent successfully.')
-                                        else:
-                                            messages.success(request, response_data.get('Description', 'Failed to send SMS'))
-                                    except ValueError:
-                                        messages.success(request, 'Failed to parse JSON response')
-                                else:
-                                    messages.success(request, f'Failed to send SMS. Status code: {response.status_code}')
-                            except requests.RequestException as e:
-                                messages.success(request, f'Error: {str(e)}')
-                    else:
-                        messages.error(request,'Ooooops! Looks like your message balance is depleted. Please recharge to keep sending SMS notifications to your guests.CLICK HERE TO RECHARGE!')
-                            
+                                try:
+                                    response = requests.get(url)
+                                    if response.status_code == 200:
+                                        try:
+                                            response_data = response.json()
+                                            if response_data.get('Status') == 'success':
+                                                messages.success(request, 'SMS sent successfully.')
+                                            else:
+                                                messages.success(request, response_data.get('Description', 'Failed to send SMS'))
+                                        except ValueError:
+                                            messages.success(request, 'Failed to parse JSON response')
+                                    else:
+                                        messages.success(request, f'Failed to send SMS. Status code: {response.status_code}')
+                                except requests.RequestException as e:
+                                    messages.success(request, f'Error: {str(e)}')
+                        else:
+                            messages.error(request,'Ooooops! Looks like your message balance is depleted. Please recharge to keep sending SMS notifications to your guests.CLICK HERE TO RECHARGE!')
+                                
+                else:
+                    pass
+                return redirect('invoicepage', id=GUESTID)
             else:
-                pass
-            return redirect('invoicepage', id=GUESTID)
+                return redirect('invoicepage', id=GUESTID)
         else:
             return redirect('loginpage')
     except Exception as e:
@@ -1445,9 +1591,9 @@ def addadvancebooking(request):
             phone = request.POST.get('phone',0)
             channal = request.POST.get('channal')
             bookenddate = request.POST.get('bookenddate')
-            totalamount = request.POST.get('totalamount')
+            totalamount = float(request.POST.get('totalamount'))
             advanceamount = request.POST.get('advanceamount')
-            discountamount = request.POST.get('discountamount')
+            discountamount = float(request.POST.get('discountamount'))
             reaminingamount = request.POST.get('reaminingamount',0)
             serialized_array = request.POST['news']
             channal=onlinechannls.objects.get(id=channal)
@@ -1964,7 +2110,9 @@ def deleteitemstofolio(request):
                     messages.error(request, 'Invoice item not exists')
             else:
                 messages.error(request, 'Invoice does not exist')
-            return redirect('invoicepage', id=invoiceid)
+            ckinvcdata = Invoice.objects.get(vendor=user,id=invoiceid)
+            cstmrid = ckinvcdata.customer.id
+            return redirect('invoicepage', id=cstmrid)
         
         else:
             return redirect('loginpage')

@@ -38,10 +38,11 @@ urlpatterns = [
     path('checkoutroom/',views.checkoutroom,name="checkoutroom"),
     path('cancelroom/',views.cancelroom,name="cancelroom"),
     path('gotofoliobyhome/<int:id>/',views.gotofoliobyhome,name="gotofoliobyhome"),
-
+    path('editcustomergstnumber/',views.editcustomergstnumber,name="editcustomergstnumber"),
     path('addguestdata/',views.addguestdata,name="addguestdata"),
     path('addguestdatafromadvanceroombook/',views.addguestdatafromadvanceroombook,name="addguestdatafromadvanceroombook"),
-  
+    path('guestregform/<int:id>/',views.guestregform,name="guestregform"),
+
     path('bookingdate/',views.bookingdate,name="bookingdate"),
     path('addadvancebooking/',views.addadvancebooking,name="addadvancebooking"),
     path('advanceroomhistory/',views.advanceroomhistory,name="advanceroomhistory"),
@@ -77,7 +78,7 @@ urlpatterns = [
     # for users check data
     path('userdatacheckbychandanbillsteam/',employeemanage.userdatacheckbychandanbillsteam,name="userdatacheckbychandanbillsteam"),
     path('searchuserdata/',employeemanage.searchuserdata,name="searchuserdata"),
-
+    path('finddatevisesales/',employeemanage.finddatevisesales,name="finddatevisesales"),
     # aminityinvoice codes
     path('aminityinvoice/',loyltys.aminityinvoice,name="aminityinvoice"),
     path('addaminitiesinvoice/',loyltys.addaminitiesinvoice,name="addaminitiesinvoice"),
@@ -112,6 +113,7 @@ urlpatterns = [
     path('Messages/',loyltys.Messages,name="Messages"),
     path('sendwelcomemsg/',loyltys.sendwelcomemsg,name="sendwelcomemsg"),
     path('sendloyaltymsg/',loyltys.sendloyaltymsg,name="sendloyaltymsg"),
+    path('searchguestexportdta/',loyltys.searchguestexportdta,name="searchguestexportdta"),
     # exceldata page
     path('exceldatapage/',donwloadexcel.exceldatapage,name="exceldatapage"),
     path('generate_invoice_excel/',donwloadexcel.generate_invoice_excel,name="generate_invoice_excel"),
@@ -143,6 +145,8 @@ urlpatterns = [
     path('addlaundryitem/',manageQR.addlaundryitem,name="addlaundryitem"),
     path('deletelaundryitem/<int:id>/',manageQR.deletelaundryitem,name="deletelaundryitem"),
     path('addfoodurlbyqr/',manageQR.addfoodurlbyqr,name="addfoodurlbyqr"),
+    path('deleteroomoffersweb/<int:id>/',manageQR.deleteroomoffersweb,name="deleteroomoffersweb"),
+
 
     #employeee management in employeemanagement 
     path('employee/',employeemanage.employee,name="employee"),

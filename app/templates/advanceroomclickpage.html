@@ -153,7 +153,7 @@
         <!--guest information-->
         <div class="card-body">
           <h5 class="mb-5 mt-0">Personal Information of Guest</h5>
-        <form action="{% url 'addguestdatafromadvanceroombook'  %}" method="post" enctype="multipart/form-data">
+        <form action="{% url 'addguestdatafromadvanceroombook'  %}" id="myForm" method="post" enctype="multipart/form-data">
           {% csrf_token %}
           {% for i in roomguestdata%}
           <input type="hidden" value="{{i.roomno.room_name}} " name="roomno"/>
@@ -195,6 +195,7 @@
                           name = "guestphone"
                           readonly
                           required
+                        
                           id="basic-icon-default-company"
                           class="form-control"
                           placeholder="Phone"
@@ -206,6 +207,7 @@
               </div>
           </div>
 
+          
 
           <div class="row">
               <div class="col-3">
@@ -464,18 +466,26 @@
                 </div>
                 </div>
           </div>
-          <div class="row">
-            <div class="col-8 form-check form-switch mb-2 ms-3 border-danger" style="border:px solid red;border-radius:10px">
+          <div class="row" >
+            <div id="onebyonefullid" class="col-8 form-check form-switch mb-2 ms-3 border-danger" style="border:px solid red;border-radius:10px">
               <span class="badge bg-label-danger mb-1 me-1 mt-1  ">*NOTE</span>
-              <label class="form-check-label mt-1 text-danger" style="margin-left:px" for="flexSwitchCheckChecked"
+              <label class="form-check-label mt-1 text-danger" style="margin-left:px;" for="flexSwitchCheckChecked"
                 >If your guest has booked multiple rooms and they want to <strong>check-in one room at a time</strong>, please turn on the button. By default, this button will check-in all the rooms that the guest has booked..</label
               >
-              <input class="form-check-input ms-1 mt-1" style="height:25px;width:60px" type="checkbox" id="flexSwitchCheckChecked" name="roomalldefaultcheckinbutton" />
+              <input id="inponebyone" class="form-check-input ms-1 mt-1" style="height:25px;width:60px;display:block" type="checkbox" id="flexSwitchCheckChecked" name="roomalldefaultcheckinbutton" />
               <span class="badge bg-label-danger mb-1 me-1 mt-1 ms-2  ">On/Off</span>
             </div>
           </div>
       </div>
       {%endfor%}
+
+      <script>
+        function hideonebyonedetail() {
+            document.getElementById('inponebyone').style.display = "none";
+            document.getElementById('onebyonefullid').style.display = "none";
+        }
+    </script>
+      
           
         
       </div> 
@@ -546,7 +556,7 @@
 
                         <div class="row">
                             <div class="col-12"><h6 class="ms-4">Total Stay Days : {{i.staydays}} <br>
-                            <span class="text-success  badge bg-label-success me-1">Total Amount Multiply By days is: {{i.total_amount}}</span> </h6></div>
+                            <span class="text-success  badge bg-label-success me-1">Total Amount Multiply By days(incl tax,discount) is: {{i.total_amount}}</span> </h6></div>
                         </div>
                   <div class="row mt-4 text-center" >
                         <div class="col-3">
@@ -647,6 +657,7 @@
                                 placeholder="Enter Phone"
                               />
                             </div>
+                            
   
                             <div class="col-6 mb-3">
                               <label for="nameBackdrop" class="form-label">Guest Address</label>
@@ -662,8 +673,10 @@
                           </div>
                           
                           <p>  
-                          <input class="form-check-input ms-2"  type="checkbox"  name="checkmoredatastatus"/>&nbsp;&nbsp;&nbsp;
+                           
+                          <input  class="form-check-input ms-2"  type="checkbox"  name="checkmoredatastatus"/>&nbsp;&nbsp;&nbsp;
                             If You Want To Save Data So Please Active The CheckBox.</p>
+                            
                           </div>
                     </div>
                 </div>
@@ -689,20 +702,34 @@
                             </div>
                             <div class="col w-100 " id="inputcash" style="display:none">
                               <label for="nameBackdrop" class="form-label">Cash Amount</label>
-                              <input type="number" class="form-control" name="cashamount" id="inputcash" placeholder="Cash Amount" />
+                              <input type="number" class="form-control" value=0 name="cashamount" id="inputcash" placeholder="Cash Amount" />
                               
                           </div>
                             <div class="col  w-100"  id="inputonline" style="display:none">
                               <label for="nameBackdrop" class="form-label">Online Payment </label>
-                              <input type="number" class="form-control" name="onlineamount" id="inputonline" placeholder="Online Amount" />
+                              <input type="number" class="form-control" value=0 name="onlineamount" id="inputonline" placeholder="Online Amount" />
                             </div>
                           </div>
                   <div class="col-6 mt-3">
 
-                 <button type="submit" class="btn btn-primary mt-4 mb-4 ms-3  w-100" > Booking Done</button>
+                 <button type="submit" class="btn btn-primary mt-4 mb-4 ms-3  w-100" id="submitButton" > Booking Done</button>
                  <span class="text text-danger ms-3 text-left" style="font-size:15px"><b>Note</b>After you click 'Booking Done', any extra discounts or loyalty points will be added to your final bill shown in the folio. </span>
                   
                 </div>
+
+                <script>
+                  document.getElementById('myForm').addEventListener('submit', function(event) {
+                      var button = document.getElementById('submitButton');
+                      
+                      // Disable the button immediately when form is submitted
+                      button.disabled = true;
+                      
+                      // Re-enable the button after 4 seconds
+                      setTimeout(function() {
+                          button.disabled = false;
+                      }, 50000);
+                  });
+              </script>
                    
                   
                   </div>

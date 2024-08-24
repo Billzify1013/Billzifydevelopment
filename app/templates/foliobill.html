@@ -188,14 +188,29 @@
     </div>
     <div class="col-4">
 
-    <form action="{% url 'checkoutroom' %}" method="post">
+    <form action="{% url 'checkoutroom' %}" id="myForm" method="post">
         {% csrf_token %}
         {%for data in invoice_data%}
         <input type="hidden" name="roomno" value="{{data.customer.roomno}}" />
         <input type="hidden" name="invoice_id" value="{{data.id}}" />
         {%endfor%}
-    <button class="btn btn-primary w-100  float-end" type="submit">Checkout Room & Save Invoice</button>
+    <button class="btn btn-primary w-100  float-end" id="submitButton" type="submit">Checkout Room & Save Invoice</button>
   
+
+    <script>
+        document.getElementById('myForm').addEventListener('submit', function(event) {
+            var button = document.getElementById('submitButton');
+            
+            // Disable the button immediately when form is submitted
+            button.disabled = true;
+            
+            // Re-enable the button after 4 seconds
+            setTimeout(function() {
+                button.disabled = false;
+            }, 50000);
+        });
+    </script>
+
 </div>
     </div>
         <div class="invoice-container mt-3" id="invoice" >
@@ -232,7 +247,8 @@
             <div class="row ms-2">
             <div class="col mb-3 w-25">
                 <label for="nameBackdrop" class="form-label">Payment Mode</label>
-                <select class="form-control" id="selectValue" onchange="showinput()" name="paymentstatus" placeholder="Select Payment" required>
+                <select class="form-control" id="selectValue" onchange="showinput()" name="paymentstatus" placeholder="Select Payment" title="please Select Correct option" required>
+                    <option  value="">Payment Mode</option>
                     <option  value="cash">Cash</option>
                     <option  value="online">Online</option>
                     <option  value="Partly">Partially</option>
@@ -326,8 +342,8 @@
                                     {%if iteams.paidstatus is True %}
                                     <span class="badge bg-label-success me-1">Paid</span>
                                     {%else%}
-                                    <input class="form-check-input"  type="checkbox" name="object"  value="{{iteams.total_amount}}"/>
-                                  
+                                    <span class="badge bg-label-warning me-1">UnPaid</span>
+                                   
                                     {%endif%}
                                     {{iteams.description}}</td>
                                 {%for data in invoice_data%}
@@ -364,10 +380,21 @@
                         </tbody>
                     </table>
                 
-
+                    
                 <div class="card shadow-none mb-0 w-50  float-end" style="margin-top:0px">
                     {%for data in invoice_data%}
-              
+                    <span>Payment Status</span>
+                    <span class="badge bg-label-success me-1 col-2">Paid</span>
+                    Total Paid Amount :{{data.cash_amount|add:data.online_amount}} <br>
+                    In cash:₹ {{data.cash_amount}} , In Online :₹ {{data.online_amount}}
+
+                    <hr>
+                    <span class="badge bg-label-warning me-1 float-end col-2">Due</span>
+                        <span>Overall Due Amount:₹ <b>{{remainamtinrs}}</b> </span>
+                    <hr>
+                        
+                    
+                    
                       
                       <li class="list-group-item" style="font-size:13px">
                         <span class="text w-50">Total</span> 
@@ -403,11 +430,7 @@
                     <span class="mt-2 mb-2 text " style="font-size:9px"><i class='bx bxs-info-circle'></i>Rooms have discount, so their tax calculation are done after applying the discount.</span>
                 
                   </div>
-                  <div class=" mt-5 " style="width:45%">
-                    <h4 id="total" class="text m-3"></h4>
-                    <button id="submitBtn" class="btn btn-primary mt-5 w-50 m-3">Calculate</button><br>
-                    <span class="text text-secondary mt-3 " ><i class='bx bxs-info-circle'></i> Click Unpaid CheckBox And Calculated Reamaining Amount.</span>
-                </div>
+                  
                 </div>
             </div>
        
@@ -436,24 +459,7 @@
       
            
     
-        <script>
-            $(document).ready(function(){
-                $("#submitBtn").click(function(){
-                //room counting data start
-                var selectedData = [];
-                var total_amount = 0;
-                var taxamount = 0;
-                $("input[name='object']:checked").each(function(){
-                    var value = $(this).val();
-                    var amount = value.split(',')[0];
-                    total_amount +=  parseInt(amount)
-                    selectedData.push({amount: amount, });
-                })
-                console.log(total_amount)
-                $('#total').html("Total Amount :"+total_amount);
-            });
-            });
-        </script>
+        
 
    
 </body>
