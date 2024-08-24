@@ -3,6 +3,7 @@ from app.models import Freedemo
 from django.contrib import messages
 
 # Create your views here.
+#test
 
 def app2index(request):
     return render(request,'start.html')
