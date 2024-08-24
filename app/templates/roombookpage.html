@@ -208,7 +208,7 @@
         </div>
         <div style="margin-top:-110px" class="card-body">
             <div class="container-fluid">
-          <form action="{% url 'addadvancebooking'%}" method="post">
+          <form action="{% url 'addadvancebooking'%}" method="post" id="myForm">
             {% csrf_token %}
 
        {% comment %} <input type="hidden" name="startdate" id="startDate" value="{{startdate}}"/><br>
@@ -250,7 +250,7 @@
                     name = "phone"
                     class="form-control"
                     id="basic-icon-default-fullname"
-                    placeholder="John Doe"
+                    placeholder="Phone"
                     aria-label="John Doe"
                     aria-describedby="basic-icon-default-fullname2"
                     required
@@ -287,7 +287,7 @@
                     class="form-control"
                     id="totalamountinput"
                     readonly
-                    placeholder="John Doe"
+                    placeholder="Total-Amount"
                     aria-label="John Doe"
                     aria-describedby="basic-icon-default-fullname2"
                   />
@@ -306,7 +306,7 @@
                     name = "advanceamount"
                     class="form-control"
                     id="advanceamountinput"
-                    placeholder="John Doe"
+                    placeholder="Advance-Amount"
                     aria-label="John Doe"
                     aria-describedby="basic-icon-default-fullname2"
                   />
@@ -324,7 +324,7 @@
                     name = "discountamount"
                     class="form-control"
                     id="discountamountinput"
-                    placeholder="John Doe"
+                    placeholder="Discount-Amount"
                     aria-label="John Doe"
                     aria-describedby="basic-icon-default-fullname2"
                   />
@@ -364,10 +364,24 @@
             
             
               <div class="col-sm-12 mt-4">
-                <button type="submit" class="btn btn-primary w-100">Send</button>
+                <button type="submit" class="btn btn-primary w-100" id="submitButton" onClick="calculateamount()">Send</button>
               </div>
             
           </form>
+
+          <script>
+            document.getElementById('myForm').addEventListener('submit', function(event) {
+                var button = document.getElementById('submitButton');
+                
+                // Disable the button immediately when form is submitted
+                button.disabled = true;
+                
+                // Re-enable the button after 4 seconds
+                setTimeout(function() {
+                    button.disabled = false;
+                }, 50000);
+            });
+        </script>
 
           
           <span class="text fw-bold mt-5">Discount Finder</span>
@@ -381,7 +395,7 @@
                   class="form-control"
                   value=0
                   id="excaptedamountinput"
-                  placeholder="Reamaining amount"
+                  placeholder="Excepted amount"
                   aria-label="Recipient's username"
                   aria-describedby="button-addon2"
                   {% comment %} onClick="calculateamount()" {% endcomment %}
@@ -480,8 +494,81 @@ $(document).ready(function(){
     });
 });
 
+//nw code caalculate discount and All
 
+function calculateamount() {
+  var totalAmt = parseFloat($('#totalamountinput').val());
+  var advanceAmt = parseFloat($('#advanceamountinput').val());
+  var discAmt = parseFloat($('#discountamountinput').val());
 
+  // Counting date data
+  var startDateStr = $("#startDate").val();
+  var endDateStr = $("#endDate").val();
+
+  var startDate = new Date(startDateStr);
+  var endDate = new Date(endDateStr);
+
+  var timeDiff = endDate.getTime() - startDate.getTime();
+  var daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
+
+  if (daysDiff === 0) {
+    daysDiff = 1;
+  }
+  $("#result").text("Number of days: " + daysDiff);
+
+  // Room counting data start
+  var selectedData = [];
+  var totalRoomCount = parseInt($('#totalroom').html());
+  
+  var totalAmount = 0;
+  var taxAmount = 0;
+  var remainingDiscount = discAmt;
+
+  $("input[name='object']:checked").each(function() {
+    var value = $(this).val();
+    var parts = value.split(',');
+    var id = parts[0];
+    var price = parseFloat(parts[1]);
+    var tax = parseFloat(parts[2]);
+
+    // Calculate price per day and apply discount
+    price *= daysDiff;
+    if (remainingDiscount > 0) {
+      if (remainingDiscount >= price) {
+        remainingDiscount -= price;
+        price = 0;
+      } else {
+        price -= remainingDiscount;
+        remainingDiscount = 0;
+      }
+    }
+
+    // Calculate tax
+    taxAmount = price * (tax / 100);
+    var totalPrice = price + taxAmount;
+    totalAmount += totalPrice;
+
+    selectedData.push({ id: id, price: price, tax: tax });
+  });
+
+  // Convert totalAmount to a number with two decimal places
+  totalAmount = totalAmount.toFixed(2);
+
+  $('#totalamt').html(parseInt(totalAmount));
+  $('#totalamountinput').val(totalAmount);
+  var serializedArray = JSON.stringify(selectedData);
+  $('#new').val(serializedArray);
+  $('#totalroom').html(selectedData.length);
+  $('#dayoffs').html(daysDiff);
+  $('#dayoffsinput').val(daysDiff);
+  $('#noofroom').val(selectedData.length);
+
+  // Calculate subtotal and remaining amount
+  var subtotal = totalAmount - advanceAmt;
+  $('#reamainingamountinput').val(parseInt(subtotal.toFixed(2)));
+} 
+
+{% comment %} 
 // Calculate remaining amount and discount
 function calculateamount() {
   var totalamt = parseFloat($('#totalamountinput').val());
@@ -524,6 +611,7 @@ function calculateamount() {
               price = 0;
           } else {
               price -= remainingDiscount;
+              
           }
       }
       console.log(price)
@@ -547,10 +635,10 @@ function calculateamount() {
 
   var subtotal = total_amount - advanceamt;
   $('#reamainingamountinput').val(subtotal);
-}
+}  {% endcomment %}
 
 
-function adddiscountcheck() {
+{% comment %} function adddiscountcheck() {
   // Get the expected amount from the input field
   var excpatedamt = parseFloat($('#excaptedamountinput').val());
 
@@ -615,7 +703,142 @@ function adddiscountcheck() {
   
   $('#showamts').text((total_amount_before_tax - discount_needed).toFixed(2));
   
+} {% endcomment %}
+
+//naya code tha jo mene banaya yaha se suru
+{% comment %} function adddiscountcheck() {
+  // Get the expected amount from the input field
+  var excpatedamt = parseFloat($('#excaptedamountinput').val());
+
+  // Counting date data
+  var startDateStr = $("#startDate").val();
+  var endDateStr = $("#endDate").val();
+  var startDate = new Date(startDateStr);
+  var endDate = new Date(endDateStr);
+  var timeDiff = endDate.getTime() - startDate.getTime();
+  var daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
+
+  if (daysDiff === 0) {
+      daysDiff = 1;
+  }
+  $("#result").text("Number of days: " + daysDiff);
+
+  // Room counting data start
+  var selectedData = [];
+  var total_amount_before_tax = 0;
+
+  $("input[name='object']:checked").each(function(){
+      var value = $(this).val();
+      var id = value.split(',')[0];
+      var price = parseFloat(value.split(',')[1]);
+      var tax = parseFloat(value.split(',')[2]);
+      selectedData.push({ id: id, price: price, tax: tax });
+      total_amount_before_tax += price;
+  });
+
+  total_amount_before_tax *= daysDiff;
+
+  // Calculate the total amount including tax for a given amount before tax
+  function calculateTotalIncludingTax(amountBeforeTax) {
+      let totalTax = 0;
+      selectedData.forEach(item => {
+          let itemAmountBeforeTax = (amountBeforeTax * (item.price / total_amount_before_tax)) * daysDiff;
+          totalTax += itemAmountBeforeTax * (item.tax / 100) ;
+      });
+      return amountBeforeTax + totalTax;
+  }
+
+  // Find the discount needed to match the expected amount
+  let discount_needed = 0;
+  let low = 0;
+  let high = total_amount_before_tax;
+  let tolerance = 0.01; // Tolerance level for precision
+
+  while (high - low > tolerance) {
+      let mid = (low + high) / 2;
+      let total_after_discount = calculateTotalIncludingTax(total_amount_before_tax - mid);
+
+      if (total_after_discount > excpatedamt) {
+          low = mid;
+      } else {
+          high = mid;
+      }
+  }
+
+  discount_needed = (total_amount_before_tax - high).toFixed(2);
+
+  // Display results
+  
+  $('#showamts').text((total_amount_before_tax - discount_needed).toFixed(2));
+  
+} {% endcomment %}
+
+function adddiscountcheck() {
+  // Get the expected amount from the input field
+  var expectedAmt = parseFloat($('#excaptedamountinput').val());
+
+  // Counting date data
+  var startDateStr = $("#startDate").val();
+  var endDateStr = $("#endDate").val();
+  var startDate = new Date(startDateStr);
+  var endDate = new Date(endDateStr);
+  var timeDiff = endDate.getTime() - startDate.getTime();
+  var daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
+
+  if (daysDiff === 0) {
+    daysDiff = 1;
+  }
+  $("#result").text("Number of days: " + daysDiff);
+
+  // Room counting data start
+  var selectedData = [];
+  var totalAmountBeforeTax = 0;
+
+  $("input[name='object']:checked").each(function() {
+    var value = $(this).val();
+    var parts = value.split(',');
+    var id = parts[0];
+    var price = parseFloat(parts[1]);
+    var tax = parseFloat(parts[2]);
+    selectedData.push({ id: id, price: price, tax: tax });
+    totalAmountBeforeTax += price;
+  });
+
+  totalAmountBeforeTax *= daysDiff;
+
+  // Calculate the total amount including tax for a given amount before tax
+  function calculateTotalIncludingTax(amountBeforeTax) {
+    let totalTax = 0;
+    selectedData.forEach(item => {
+      let itemAmountBeforeTax = (amountBeforeTax * (item.price * daysDiff / totalAmountBeforeTax));
+      totalTax += itemAmountBeforeTax * (item.tax / 100);
+    });
+    return amountBeforeTax + totalTax;
+  }
+
+  // Find the discount needed to match the expected amount
+  let discountNeeded = 0;
+  let low = 0;
+  let high = totalAmountBeforeTax;
+  let tolerance = 0.01; // Tolerance level for precision
+
+  while (high - low > tolerance) {
+    let mid = (low + high) / 2;
+    let totalAfterDiscount = calculateTotalIncludingTax(totalAmountBeforeTax - mid);
+
+    if (totalAfterDiscount > expectedAmt) {
+      low = mid;
+    } else {
+      high = mid;
+    }
+  }
+
+  discountNeeded = (totalAmountBeforeTax - high).toFixed(2);
+
+  // Display results
+  $('#showamts').text((totalAmountBeforeTax - discountNeeded).toFixed(2));
 }
+
 
 </script>
 

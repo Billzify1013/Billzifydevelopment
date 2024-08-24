@@ -128,7 +128,7 @@
         <!--guest information-->
         <div class="card-body">
           <h5 class="mb-5 mt-0">Personal Information of Guest</h5>
-        <form action="{% url 'addguestdata'  %}" method="post" enctype="multipart/form-data">
+        <form action="{% url 'addguestdata'  %}" method="post" id="myForm" enctype="multipart/form-data">
           {% csrf_token %}
           <input type="hidden" name="staydays" id="resultdaysinput" />
           <div class="row">
@@ -529,7 +529,7 @@
                         name = "subtotal"
                         id="subtotal"
                         class="form-control"
-                        placeholder="Username"
+                        placeholder="subtotal"
                         value="{{i.price}}"
                         aria-label="Username"
                         aria-describedby="basic-addon11"
@@ -545,7 +545,7 @@
                     <div class="input-group">
                       
                       <select id="selectopt" class="form-control">
-                        <option value="Fixed" class="form-control">Fixed </option>
+                        <option value="Fixed" class="form-control">Discount ₹</option>
                       </select>
                       
                       <input
@@ -555,7 +555,7 @@
                         id="discountamount"
                         class="form-control"
                         aria-label="Text input with segmented dropdown button"
-                      /><button type="button" class="btn btn-primary" onclick="adddiscount()">Add Discount</button>
+                      /><button type="button" class="btn btn-primary" onclick="adddiscount()">Add</button>
                     </div>
                   
                   </div>
@@ -660,12 +660,12 @@
                   </div>
                   <div class="col w-100 " id="inputcash" style="display:none">
                     <label for="nameBackdrop" class="form-label">Cash Amount</label>
-                    <input type="number" class="form-control" name="cashamount" id="inputcash" placeholder="Cash Amount" />
+                    <input type="number" class="form-control" name="cashamount" value=0 id="inputcash" placeholder="Cash Amount" />
                     
                 </div>
                   <div class="col  w-100"  id="inputonline" style="display:none">
                     <label for="nameBackdrop" class="form-label">Online Payment </label>
-                    <input type="number" class="form-control" name="onlineamount" id="inputonline" placeholder="Online Amount" />
+                    <input type="number" class="form-control" name="onlineamount" value=0 id="inputonline" placeholder="Online Amount" />
                   </div>
                 </div>
               </div>
@@ -705,12 +705,24 @@
               <div class="row">
 
                 <div class="col-3">
-                  <button type="submit" class="btn btn-primary mt-4 mb-4 ms-4 w-100" > Booking Done</button>
+                  <button id="submitButton" type="submit"  class="btn btn-primary mt-4 mb-4 ms-4 w-100" > Booking Done</button>
                 </div>
                 
                 
-               
-
+              
+                <script>
+                  document.getElementById('myForm').addEventListener('submit', function(event) {
+                      var button = document.getElementById('submitButton');
+                      
+                      // Disable the button immediately when form is submitted
+                      button.disabled = true;
+                      
+                      // Re-enable the button after 4 seconds
+                      setTimeout(function() {
+                          button.disabled = false;
+                      }, 50000);
+                  });
+              </script>
               </div>
             </form>
 
@@ -811,7 +823,7 @@
                 total = taxamount + total
                
                 
-                document.getElementById('totalamount').value = total;
+                document.getElementById('totalamount').value = parseInt(total);
                 document.getElementById('subtotal').value = subtotal;
                 document.getElementById('totalamounttext').innerHTML = total;
               }

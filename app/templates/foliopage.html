@@ -17,13 +17,14 @@
             <th>checkindate</th>
             <th>checkoutdate</th>
             <th>Invoice</th>
+            <th>Reg-Form</th>
           </tr>
         </thead>
         <tbody class="table-border-bottom-0">
 
             {%for data in invoice_data%}
           <tr>
-            <td><i class="fab fa-angular fa-lg text-danger me-3"></i> <strong>{{data.customer.guestname}}</strong></td>
+            <td><i class="fab fa-angular fa-lg text-danger "></i> <strong>{{data.customer.guestname}}</strong></td>
             <td>{{data.customer.guestphome}}</td>
             <td><i class='bx bx-home-heart mb-1 text-warning'></i> {{data.customer.roomno}}</td>
             <td>
@@ -32,7 +33,7 @@
             <td><span class="badge bg-label-primary me-1">{{data.customer.checkindate}}</span></td>
             <td><span class="badge bg-label-primary me-1">{{data.customer.checkoutdate}}</span></td>
             <td><a class="btn btn-primary" href="{% url 'invoicepage' id=data.customer.id %}">Folio</a></td>
-            
+            <td><a class="btn btn-info" href="{% url 'guestregform' id=data.customer.id %}">Form</a></td>
           </tr>
           {%endfor%}
    

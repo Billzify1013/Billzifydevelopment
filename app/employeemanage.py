@@ -918,7 +918,9 @@ def additemstofolio(request):
                     individualtax = taxrate / 2
                     inditaxamt = taxamt/2
                     print(totalamt)
-                    InvoiceItem.objects.create(vendor=user,invoice_id=foliocustomer,description=iteams.description,price=iteams.price,
+                    current_date = datetime.now().date()
+                    current_date = str(current_date)
+                    InvoiceItem.objects.create(vendor=user,invoice_id=foliocustomer,description=iteams.description +" "+ current_date,price=iteams.price,
                                         quantity_likedays=qty,cgst_rate=individualtax,sgst_rate=individualtax,
                                         hsncode=hsccode,total_amount=totalamt)
                     invc = Invoice.objects.get(vendor=user,id=foliocustomer)
@@ -931,7 +933,9 @@ def additemstofolio(request):
                     messages.success(request,'Invoice Item added succesfully')
                     return redirect('pos')
                 else:
-                    InvoiceItem.objects.create(vendor=user,invoice_id=foliocustomer,description=iteams.description,price=iteams.price,
+                    current_date = datetime.now().date()
+                    current_date = str(current_date)
+                    InvoiceItem.objects.create(vendor=user,invoice_id=foliocustomer,description=iteams.description+" "+ current_date,price=iteams.price,
                                         quantity_likedays=qty,total_amount=total,cgst_rate=0.0,sgst_rate=0.0)
                     invc = Invoice.objects.get(vendor=user,id=foliocustomer)
                     totalamtinvc = invc.total_item_amount + total
@@ -962,10 +966,13 @@ def addlaundryitems(request):
                     pass
                 laundry = LaundryServices.objects.get(vendor=user,id=itemid)
                 price = laundry.price
-                name = laundry.gencategory + " " + laundry.name +" "+ laundry.sercategory
+                current_date = datetime.now().date()
+                current_date = str(current_date)
+                name = laundry.gencategory + " " + laundry.name +" "+ laundry.sercategory+" "+current_date
                 total = price * int(qty)
                 print(name)
                 print(total)
+                
                 InvoiceItem.objects.create(vendor=user,invoice_id=foliocustomer,description=name,price=price,
                                         quantity_likedays=qty,total_amount=total,cgst_rate=0.0,sgst_rate=0.0)
                 invc = Invoice.objects.get(vendor=user,id=foliocustomer)
@@ -1003,6 +1010,86 @@ def searchuserdata(request):
             enddate = request.POST.get('enddate')
             userdata = Subscription.objects.filter(end_date__range=[startdate,enddate]).all()
             return render(request,'usersdatabybills.html',{'userdata':userdata})
+        else:
+            return redirect('loginpage')
+    except Exception as e:
+        return render(request, '404.html', {'error_message': str(e)}, status=500)  
+
+
+from django.db.models import Sum
+def finddatevisesales(request):
+    try:
+        if request.user.is_superuser and request.method=="POST":
+            user=request.user
+            startdate = request.POST.get('startdate')
+            enddate = request.POST.get('enddate')
+            Invoice.objects.filter(vendor=user,invoice_date__range=[startdate,enddate],foliostatus=True)
+
+            total_grand_total_amount = Invoice.objects.filter(
+                vendor=user,
+                invoice_date__range=[startdate, enddate],
+                foliostatus=True
+            ).aggregate(total_amount=Sum('grand_total_amount'))
+
+            # `total_grand_total_amount` is a dictionary with the sum under the key 'total_amount'
+            sattle_total_amount = total_grand_total_amount['total_amount']
+            print(sattle_total_amount,"total amount searched")
+
+            folio_total_grand_total_amount = Invoice.objects.filter(
+                vendor=user,
+                invoice_date__range=[startdate, enddate],
+                foliostatus=False
+            ).aggregate(total_amount=Sum('grand_total_amount'))
+
+            # `total_grand_total_amount` is a dictionary with the sum under the key 'total_amount'
+            folio_total_amount = folio_total_grand_total_amount['total_amount']
+            print(folio_total_amount,"folio total amount searched")
+
+                        
+            # Aggregate the sum of `gst_amount`
+            gst_amount_sum = Invoice.objects.filter(
+                vendor=user,
+                invoice_date__range=[startdate, enddate]
+            ).aggregate(total_gst_amount=Sum('gst_amount'))
+
+            total_gst_amount = gst_amount_sum['total_gst_amount']
+            if total_gst_amount == None:
+                pass
+            else:
+                total_gst_amount = total_gst_amount * 2
+            print(total_gst_amount,"total gst amount")
+
+            grand_total_grand_total_amount = Invoice.objects.filter(
+                vendor=user,
+                invoice_date__range=[startdate, enddate]
+            ).aggregate(total_amount=Sum('grand_total_amount'))
+
+            # `total_grand_total_amount` is a dictionary with the sum under the key 'total_amount'
+            grand_total_amount = grand_total_grand_total_amount['total_amount']
+            print(grand_total_amount," total amount searched")
+
+            # Aggregate the sum of `cash_amount`
+            cash_amount_sum = Invoice.objects.filter(
+                vendor=user,
+                invoice_date__range=[startdate, enddate]
+            ).aggregate(total_cash_amount=Sum('cash_amount'))
+
+            # Access the correct key 'total_cash_amount'
+            total_cash_amount = cash_amount_sum['total_cash_amount']
+            print(total_cash_amount,"total cash")
+
+            online_amount_sum = Invoice.objects.filter(
+                vendor=user,
+                invoice_date__range=[startdate, enddate]
+            ).aggregate(total_online_amount=Sum('online_amount'))
+
+            # Access the correct key 'total_online_amount'
+            total_online_amount = online_amount_sum['total_online_amount']
+            print(total_online_amount,"online amount")
+           
+            return render(request,'datewisesale.html',{'sattle_total_amount':sattle_total_amount,
+                                                       'total_cash_amount':total_cash_amount,'total_online_amount':total_online_amount,'grand_total_amount':grand_total_amount,'startdate':startdate,'enddate':enddate,'folio_total_amount':folio_total_amount,'total_gst_amount':total_gst_amount})
+
         else:
             return redirect('loginpage')
     except Exception as e:
